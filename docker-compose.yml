@@ -1,0 +1,71 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Circuit Simulator – Docker Compose
+#
+#   Development  (default):  docker compose up  →  http://localhost:4200
+#   Production:              docker compose --profile production up  →  http://localhost:8080
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Angular Dev Server ────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: dev
+    container_name: circuit-simulator-frontend
+    volumes:
+      # Mount source for hot-reload
+      - ./frontend/src:/app/src
+      # Config files (Tailwind picks up changes live)
+      - ./frontend/angular.json:/app/angular.json:ro
+      - ./frontend/tailwind.config.js:/app/tailwind.config.js:ro
+      - ./frontend/postcss.config.js:/app/postcss.config.js:ro
+      - ./frontend/tsconfig.json:/app/tsconfig.json:ro
+      - ./frontend/tsconfig.app.json:/app/tsconfig.app.json:ro
+      # Keep node_modules inside the container (named volume)
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "${FRONTEND_DEV_PORT:-4200}:4200"
+    environment:
+      - NODE_ENV=development
+    networks:
+      - circuit-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4200"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ── Nginx Production Server ───────────────────────────────────────────────
+  frontend-prod:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: prod
+    container_name: circuit-simulator-frontend-prod
+    ports:
+      - "${FRONTEND_PROD_PORT:-8080}:80"
+    networks:
+      - circuit-network
+    restart: unless-stopped
+    profiles:
+      - production
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+# ─────────────────────────────────────────────────────────────────────────────
+volumes:
+  frontend_node_modules:
+    name: circuit-simulator_node_modules
+
+networks:
+  circuit-network:
+    name: circuit-simulator-network
+    driver: bridge
