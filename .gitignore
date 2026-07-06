@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Angular build output
+dist/
+frontend/dist/
+.angular/
+frontend/.angular/
+
+# Environment files
+.env
+*.env.local
+
+# Docker volumes / overrides
+docker-compose.override.yml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/
+frontend/coverage/
