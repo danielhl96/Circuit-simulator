@@ -11,8 +11,8 @@
      <div class= "flex flex-row items-center justify-start w-full">
     
     @if (libOpen()) {
-    <div class="p-4 py-2 m-2 w-40 border border-black rounded-lg bg-base-100">
-      <p class="text-lg font-bold text-black">Library</p>
+    <div class="p-4 py-2 m-2 w-40 border border-gray-300 rounded-lg bg-base-100">
+      <p class="text-sm text-black">Library</p>
     <div class="grid grid-cols-1 justify-start items-start sm:grid-cols-1 lg:grid-cols-1 max-h-96 overflow-y-auto gap-4 mb-2">
       @for (component of components(); track component.symbol; let i = $index) {
         <app-device-card
