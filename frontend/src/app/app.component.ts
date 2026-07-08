@@ -1,18 +1,13 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-
-interface CircuitComponent {
-  symbol: string;
-  name: string;
-  description: string;
-  badge: string;
-  count: number;
-}
+import { DeviceCardComponent } from '../shared/devicecard/device-card.component';
+import { CircuitComponent } from '../shared/devicecard/circuit-component.model';
+import { NavbarComponent } from '../shared/navbar/navbar.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, DeviceCardComponent, NavbarComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
@@ -67,6 +62,11 @@ export class AppComponent {
   simulationStatus = signal<'idle' | 'running' | 'done'>('idle');
   totalComponents = signal<number>(0);
   totalConnections = signal<number>(0);
+  libOpen = signal<boolean>(true);
+
+  toggleLib(): void {
+    this.libOpen.update((open: boolean) => !open);
+  }
 
   addComponent(index: number): void {
     const updated = [...this.components()];
