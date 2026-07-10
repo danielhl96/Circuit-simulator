@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="288" viewBox="0 0 100 120">
+
+  <!-- Gate-Metallbalken (vertikal) -->
+  <line x1="28" y1="28" x2="28" y2="92" stroke="black" stroke-width="3"/>
+
+  <!-- Kanal: 3 unterbrochene Segmente = Enhancement-Mode -->
+  <line x1="36" y1="30" x2="36" y2="48" stroke="black" stroke-width="2.5"/>
+  <line x1="36" y1="54" x2="36" y2="66" stroke="black" stroke-width="2.5"/>
+  <line x1="36" y1="72" x2="36" y2="90" stroke="black" stroke-width="2.5"/>
+
+  <!-- Drain: horizontaler Stub + vertikaler Anschluss nach oben -->
+  <line x1="36" y1="39" x2="68" y2="39" stroke="black" stroke-width="2"/>
+  <line x1="68" y1="5"  x2="68" y2="39" stroke="black" stroke-width="2"/>
+
+  <!-- Source: horizontaler Stub + vertikaler Anschluss nach unten -->
+  <line x1="36" y1="81" x2="68" y2="81" stroke="black" stroke-width="2"/>
+  <line x1="68" y1="81" x2="68" y2="115" stroke="black" stroke-width="2"/>
+
+  <!-- Gate-Anschluss horizontal nach links -->
+  <line x1="5" y1="60" x2="28" y2="60" stroke="black" stroke-width="2"/>
+
+  <!-- Bulk: Kanal-Mitte verbunden mit Source -->
+  <line x1="36" y1="60" x2="68" y2="60" stroke="black" stroke-width="1.5"/>
+  <line x1="68" y1="60" x2="68" y2="81" stroke="black" stroke-width="1.5"/>
+
+  <!-- N-Kanal-Pfeil: Spitze zeigt IN den Kanal (x=36) -->
+  <polygon points="42,57 42,63 36,60" fill="black"/>
+
+  <!-- Beschriftung -->
+  <text x="71" y="13"  font-size="10" font-family="monospace" fill="black" font-weight="bold">D</text>
+  <text x="2"  y="64"  font-size="10" font-family="monospace" fill="black" font-weight="bold">G</text>
+  <text x="71" y="115" font-size="10" font-family="monospace" fill="black" font-weight="bold">S</text>
+
+</svg>

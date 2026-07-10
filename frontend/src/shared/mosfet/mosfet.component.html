@@ -1,0 +1,139 @@
+<div class="flex flex-col items-center gap-2">
+
+  <!-- Info-Box für angeklickten Bereich -->
+  @if (selectedRegion()) {
+    <div class="alert alert-info text-sm py-1 px-3 w-full max-w-xl">
+      <strong>{{ selectedRegion() }}</strong>
+    </div>
+  }
+ 
+  <svg
+    [attr.width]="svgW"
+    [attr.height]="svgH"
+    [attr.viewBox]="'0 0 ' + svgW + ' ' + svgH"
+    xmlns="http://www.w3.org/2000/svg">
+
+    <defs>
+      <pattern id="depletionPattern" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
+        <rect width="6" height="6" fill="#d4b8e0"/>
+        <line x1="0" y1="6" x2="6" y2="0" stroke="#a07cb8" stroke-width="0.8"/>
+      </pattern>
+    </defs>
+
+    <!-- Legende -->
+    <rect x="60" y="14" width="580" height="30" fill="#f8f8f8" stroke="#ccc" stroke-width="1" rx="4"/>
+    <text x="76"  y="34" font-size="12" font-family="sans-serif" fill="#2980b9" font-weight="bold">⊖ Elektronen</text>
+    <text x="200" y="34" font-size="12" font-family="sans-serif" fill="#c0392b" font-weight="bold">⊕ Löcher</text>
+    <text x="310" y="34" font-size="12" font-family="sans-serif" fill="#5a2d82" font-weight="bold">⊟ ion. Akzeptoren</text>
+    <text x="490" y="34" font-size="11" font-family="monospace" fill="#333">{{ vgsLabel }}</text>
+
+    <!-- ── Substrat p++ ──────────────────────────────────────── -->
+    <rect
+      x="60" [attr.y]="subY" width="580" [attr.height]="subH"
+      fill="#bdd7ee" rx="2"
+      class="cursor-pointer hover:opacity-80"
+      (click)="selectRegion('p⁺⁺ Substrat – Na ≈ 10¹⁷ cm⁻³ | Majoritätsträger: Löcher ⊕')"/>
+    <text x="320" [attr.y]="subY + subH - 10" text-anchor="middle"
+      font-size="13" font-family="sans-serif" fill="#1a4a7a" font-weight="bold"
+      style="pointer-events:none">
+      p⁺⁺  Substrat  (Na ≈ 10¹⁷ cm⁻³)
+    </text>
+
+    <!-- ── Depletionszone (dynamische Höhe) ─────────────────── -->
+    <rect
+      [attr.x]="gateX" [attr.y]="deplY"
+      [attr.width]="gateLength" [attr.height]="deplH"
+      fill="url(#depletionPattern)" rx="2"
+      class="cursor-pointer hover:opacity-70"
+      (click)="selectRegion('Depletionszone – ionisierte Akzeptoren ⊟, keine freien Träger. Breite ∝ √(Na)')"/>
+
+    <!-- ── Inversionskanal (nur wenn leitend) ───────────────── -->
+    @if (conducting) {
+      <rect
+        [attr.x]="gateX" [attr.y]="subY - 6"
+        [attr.width]="gateLength" height="10"
+        fill="#2980b9" opacity="0.7" rx="2"
+        class="cursor-pointer"
+        (click)="selectRegion('Inversionskanal – Elektronen ⊖ akkumuliert, Vgs ≥ Vth → Strom fließt')"/>
+      <text [attr.x]="svgW / 2" [attr.y]="subY - 10"
+        text-anchor="middle" font-size="10" fill="#2980b9"
+        style="pointer-events:none">▶ Inversionskanal aktiv</text>
+    } @else {
+      <text [attr.x]="svgW / 2" y="210"
+        text-anchor="middle" font-size="10" fill="#e74c3c"
+        style="pointer-events:none">✕  kein Inversionskanal  (Vgs &lt; Vth)</text>
+      <line
+        [attr.x1]="gateX" y1="222" [attr.x2]="gateEndX" y2="222"
+        stroke="#e74c3c" stroke-width="1.5" stroke-dasharray="6,4"/>
+    }
+
+    <!-- ── Source n++ ────────────────────────────────────────── -->
+    <rect
+      x="60" y="160" [attr.width]="gateX - 60" height="140"
+      fill="#5cb85c" rx="2"
+      class="cursor-pointer hover:opacity-80"
+      (click)="selectRegion('n⁺⁺ Source – Nd ≈ 10²⁰ cm⁻³ | Elektronen-Reservoir ⊖')"/>
+    <text [attr.x]="(gateX - 60) / 2 + 60" y="200" text-anchor="middle"
+      font-size="13" fill="white" font-weight="bold" style="pointer-events:none">n⁺⁺</text>
+    <text [attr.x]="(gateX - 60) / 2 + 60" y="216" text-anchor="middle"
+      font-size="11" fill="#d4edda" style="pointer-events:none">Source</text>
+
+    <!-- ── Drain n++ ─────────────────────────────────────────── -->
+    <rect
+      [attr.x]="gateEndX" y="160" [attr.width]="svgW - 60 - gateEndX" height="140"
+      fill="#5cb85c" rx="2"
+      class="cursor-pointer hover:opacity-80"
+      (click)="selectRegion('n⁺⁺ Drain – Nd ≈ 10²⁰ cm⁻³ | Elektronen-Reservoir ⊖')"/>
+    <text [attr.x]="gateEndX + (svgW - 60 - gateEndX) / 2" y="200" text-anchor="middle"
+      font-size="13" fill="white" font-weight="bold" style="pointer-events:none">n⁺⁺</text>
+    <text [attr.x]="gateEndX + (svgW - 60 - gateEndX) / 2" y="216" text-anchor="middle"
+      font-size="11" fill="#d4edda" style="pointer-events:none">Drain</text>
+
+    <!-- ── Gate-Oxid ─────────────────────────────────────────── -->
+    <rect
+      [attr.x]="gateX" y="148" [attr.width]="gateLength" height="18"
+      fill="#fff59d" stroke="#f0c030" stroke-width="1"
+      class="cursor-pointer hover:opacity-80"
+      (click)="selectRegion('SiO₂ Gate-Oxid – Isolator, tox ≈ 10 nm. Kapazität Cox = ε₀·εr / tox')"/>
+    <text [attr.x]="svgW / 2" y="161" text-anchor="middle"
+      font-size="10" fill="#7a6000" style="pointer-events:none">
+      SiO₂  (tox ≈ 10 nm)
+    </text>
+
+    <!-- ── Gate-Metall ───────────────────────────────────────── -->
+    <rect
+      [attr.x]="gateX" y="110" [attr.width]="gateLength" [attr.height]="gateWidth"
+      fill="#555" rx="2"
+      class="cursor-pointer hover:opacity-80"
+      (click)="selectRegion('Gate – Steuerspannung Vgs = ' + Vgs + 'V. Erzeugt E-Feld durch Oxid')"/>
+    <text [attr.x]="svgW / 2" y="134" text-anchor="middle"
+      font-size="13" fill="white" font-weight="bold" style="pointer-events:none">
+      Gate  (Vgs = {{ Vgs.toFixed(1) }}V)
+    </text>
+
+    <!-- ── Anschlüsse ─────────────────────────────────────────── -->
+    <line x1="350" y1="90" x2="350" y2="110" stroke="#333" stroke-width="3"/>
+    <circle cx="350" cy="84" r="8" fill="#e8a000" stroke="#333" stroke-width="1.5"/>
+    <text x="365" y="89" font-size="11" font-family="monospace" fill="#333" font-weight="bold">G</text>
+
+    <line [attr.x1]="gateX / 2 + 30" y1="140" [attr.x2]="gateX / 2 + 30" y2="160"
+      stroke="#333" stroke-width="3"/>
+    <circle [attr.cx]="gateX / 2 + 30" cy="134" r="8" fill="#e8a000" stroke="#333" stroke-width="1.5"/>
+    <text [attr.x]="gateX / 2 + 28" y="120" font-size="11" font-family="monospace" fill="#333" font-weight="bold">S</text>
+
+    <line [attr.x1]="gateEndX + (svgW - 60 - gateEndX) / 2" y1="140"
+          [attr.x2]="gateEndX + (svgW - 60 - gateEndX) / 2" y2="160"
+      stroke="#333" stroke-width="3"/>
+    <circle [attr.cx]="gateEndX + (svgW - 60 - gateEndX) / 2" cy="134"
+      r="8" fill="#e8a000" stroke="#333" stroke-width="1.5"/>
+    <text [attr.x]="gateEndX + 4" y="128" font-size="11" font-family="monospace" fill="#333" font-weight="bold">D</text>
+
+    <line x1="350" [attr.y1]="subY + subH" x2="350" [attr.y2]="subY + subH + 18"
+      stroke="#333" stroke-width="3"/>
+    <circle cx="350" [attr.cy]="subY + subH + 24" r="8" fill="#e8a000" stroke="#333" stroke-width="1.5"/>
+    <text x="362" [attr.y]="subY + subH + 28" font-size="11" font-family="monospace" fill="#333" font-weight="bold">B</text>
+
+    <!-- Außenrahmen -->
+    <rect x="60" y="108" width="580" height="280" fill="none" stroke="#555" stroke-width="2" rx="3"/>
+  </svg>
+</div>

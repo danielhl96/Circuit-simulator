@@ -17,6 +17,8 @@ services:
     volumes:
       # Mount source for hot-reload
       - ./frontend/src:/app/src
+      # Static assets (SVGs, images, etc.)
+      - ./frontend/public:/app/public
       # Config files (Tailwind picks up changes live)
       - ./frontend/angular.json:/app/angular.json:ro
       - ./frontend/tailwind.config.js:/app/tailwind.config.js:ro

@@ -14,5 +14,6 @@ export class DeviceCardComponent {
 
   onAdd(): void {
     this.add.emit();
+    console.log(`Added component: ${this.component.name}`);
   }
 }

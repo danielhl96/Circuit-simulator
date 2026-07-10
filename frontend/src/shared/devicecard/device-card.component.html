@@ -1,10 +1,17 @@
-<div class="card bg-base-100 w-20 shadow hover:shadow-md transition-shadow">
-  <div class="card-body">
-    <h3 class="card-title">
-      <span class="badge {{ component.badge }} justify-center items-center font-mono">
+<div class="card bg-base-100 w-20 shadow hover:shadow-md transition-shadow cursor-pointer" (click)="onAdd()">
+  <div class="card-body p-2 items-center">
+
+    @if (component.svgSrc) {
+      <img
+        [src]="component.svgSrc"
+        [alt]="component.name"
+        class="w-12 h-12 object-contain" />
+    } @else {
+      <span class="badge {{ component.badge }} justify-center items-center font-mono text-lg px-3">
         {{ component.symbol }}
       </span>
-    </h3>
-    
+    }
+
+    <p class="text-xs text-center text-base-content/70 mt-1">{{ component.name }}</p>
   </div>
 </div>
