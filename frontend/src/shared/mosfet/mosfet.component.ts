@@ -1,5 +1,6 @@
 import { Component, Input, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Mosfet } from './models/mosfet';
 
 @Component({
   selector: 'app-mosfet-2d',
@@ -11,9 +12,16 @@ export class MosfetComponent {
   // ── Eingangsparameter (von außen steuerbar) ──────────────────
   @Input() gateLength: number = 300;  // px Breite des Gate/Kanal-Bereichs
   @Input() gateWidth:  number = 38;   // px Höhe des Gate-Metalls
-  @Input() Vgs:        number = 0;    // V  (0 = sperrt, >Vth = leitet)
-  @Input() Vth:        number = 1.0;  // V  Schwellspannung
   @Input() label:      string = 'N-Kanal MOSFET (Enhancement)';
+
+   mosfet = new Mosfet();
+   
+   constructor() {
+      // Beispiel: Gate-Spannung ändern, um leitend/sperrend zu testen
+      setTimeout(() => {
+        this.mosfet.Vgs = 2.0;  // Vgs < Vth → sperrend
+      }, 1000);
+    }
 
   // ── Abgeleitete Geometrie ────────────────────────────────────
   // SVG-Gesamtbreite fest, Gate zentriert
@@ -31,7 +39,7 @@ export class MosfetComponent {
   get deplY():   number { return this.subY - this.deplH + 40; }
 
   // Leitend wenn Vgs >= Vth
-  get conducting(): boolean { return this.Vgs >= this.Vth; }
+  get conducting(): boolean { return this.mosfet.Vgs >= this.mosfet.Vth; }
 
   // Kanal (Inversionsschicht) – nur sichtbar wenn leitend
   get channelColor(): string {
@@ -40,7 +48,7 @@ export class MosfetComponent {
 
   // Beschriftung Gate-Spannung
   get vgsLabel(): string {
-    return `Vgs = ${this.Vgs.toFixed(1)}V  (${this.conducting ? '▶ leitet' : '✕ sperrt'})`;
+    return `Vgs = ${this.mosfet.Vgs.toFixed(1)}V  (${this.conducting ? '▶ leitet' : '✕ sperrt'})`;
   }
 
   // Klick auf Bereich

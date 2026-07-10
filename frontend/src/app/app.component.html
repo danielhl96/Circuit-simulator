@@ -25,7 +25,7 @@
      </div>
     }
      <!-- ── Schaltplan ───────────────────────────────────────── -->
-    <div class="flex-1 p-4 m-2 border border-gray-300 overflow-y-auto rounded-lg h-[80dvh] bg-base-100">
+    <div class="flex-1 p-4 m-2 border border-gray-300 overflow-y-auto rounded-lg h-[85dvh] bg-base-100">
       
       @if (addedComponents().length === 0) {
         <p class="text-sm text-gray-400 italic">Kein Bauteil ausgewählt – klicke in der Library auf ein Bauteil.</p>
@@ -40,6 +40,7 @@
           <div class="badge {{ added.badge }} m-1">{{ added.symbol }}</div>
         }
       }
+      
      
     </div>
 

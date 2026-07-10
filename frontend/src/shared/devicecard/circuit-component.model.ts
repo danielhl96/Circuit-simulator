@@ -1,8 +1,10 @@
-export interface CircuitComponent {
-  symbol: string;
-  svgSrc?: string;  // optionaler Pfad zu einem SVG aus public/
-  name: string;
-  description: string;
-  badge: string;
-  count: number;
+export class CircuitComponent {
+  constructor(
+    public name: string,
+    public description: string,
+    public svgSrc: string,
+    public symbol: string,
+    public badge: string,
+    public count: number = 0
+  ) {}
 }
