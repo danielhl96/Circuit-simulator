@@ -1,6 +1,19 @@
-<div class="flex flex-col items-center gap-2">
+<div class="flex flex-row items-center gap-2">
 
-  <!-- Info-Box für angeklickten Bereich -->
+  
+  <div class="w-50 h-full border border-gray-300 rounded-lg bg-base-100 flex  flex-col items-center justify-center p-3 m-1">
+            <p class="text-sm text-black">MOSFET-Details</p>
+          @for (entry of mosfetValues | keyvalue; track entry.key) {
+  <div class="flex flex-row items-center justify-between w-full">
+    <span class="text-xs text-gray-600">{{ entry.key }}</span>
+    <span class="text-xs text-gray-800 font-bold">{{ entry.value.join(' ') }}</span>
+  </div>
+}
+</div>
+
+  <div class="flex flex-col items-center gap-2">
+
+    <!-- Info-Box für angeklickten Bereich -->
   @if (selectedRegion()) {
     <div class="alert alert-info text-sm py-1 px-3 w-full max-w-xl">
       <strong>{{ selectedRegion() }}</strong>
@@ -134,4 +147,5 @@
     <text x="348" y="421" font-size="11" font-family="monospace" fill="#333" font-weight="bold">B</text>
 
   </svg>
+</div>
 </div>

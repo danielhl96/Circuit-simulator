@@ -34,6 +34,7 @@
       @for (added of addedComponents(); track $index) {
         @if (added.symbol === 'Q') {
           <button class ="btn btn-sm btn-danger m-1" (click)="removeComponent($index)">Entfernen</button>
+          
        
           <app-mosfet-2d />
         } @else {
@@ -43,6 +44,8 @@
       
      
     </div>
+
+    
 
 
 

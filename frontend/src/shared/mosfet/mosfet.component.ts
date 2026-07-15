@@ -13,14 +13,16 @@ export class MosfetComponent {
   @Input() gateLength: number = 300;  // px Breite des Gate/Kanal-Bereichs
   @Input() gateWidth:  number = 38;   // px Höhe des Gate-Metalls
   @Input() label:      string = 'N-Kanal MOSFET (Enhancement)';
-
-   mosfet = new Mosfet();
+  mosfet: Mosfet;
+   
    
    constructor() {
-      // Beispiel: Gate-Spannung ändern, um leitend/sperrend zu testen
-      setTimeout(() => {
-        this.mosfet.Vgs = 2.0;  // Vgs < Vth → sperrend
-      }, 1000);
+      this.mosfet = new Mosfet();
+      this.mosfet.Vds = 5;  // V
+      this.mosfet.Vgs = 3;
+      this.mosfet.Vsb = 0;
+      this.mosfet.Vth = 1;
+      
     }
 
   // ── Abgeleitete Geometrie ────────────────────────────────────
@@ -44,6 +46,10 @@ export class MosfetComponent {
   // Kanal (Inversionsschicht) – nur sichtbar wenn leitend
   get channelColor(): string {
     return this.conducting ? '#2980b9' : 'none';
+  }
+
+  get mosfetValues(): Record<string, [number, string]> {
+    return this.mosfet.getValues();
   }
 
   // Beschriftung Gate-Spannung

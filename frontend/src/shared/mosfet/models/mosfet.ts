@@ -19,8 +19,8 @@ export class Mosfet {
         public Drain_Node: string = '', // Drain node of the MOSFET
         public Gate_Node: string = '', // Gate node of the MOSFET
         public Type: 'N' | 'P' = 'N', // Type of MOSFET (N-channel or P-channel)
-        public Gate_Length: number = 1e-6, // m
-        public Gate_Width: number = 1e-6, // m
+        public Gate_Length: number = 10e-9, // m
+        public Gate_Width: number = 7e-9, // m
         public Oxide_Thickness: number = 1e-9, // m
         public Vgs: number = 0, // V
         public Vds: number = 0, // V
@@ -41,6 +41,30 @@ export class Mosfet {
         public T: number = 300, // K Temperature
 
     ) {}
+
+    public getValues(): Record<string, [number,string]> {
+        //get all the relevant values of the MOSFET for display or further calculations
+        return {
+            Vgs: [this.Vgs, "V"],
+            Vds: [this.Vds, "V"],
+            Vsb: [this.Vsb, "V"],
+            Vth: [this.Vth, "V"],
+            Id: [this.calculateDrainCurrent(true), "A"],
+            gm: [this.gm, "S"],
+            ro: [this.ro, "Ω"],
+            lambda: [this.lambda, "1/V"],
+            Gate_Length: [this.Gate_Length*1e9, "nm"],  // Convert to nanometers for display
+            Gate_Width: [this.Gate_Width*1e9, "nm"],  // Convert to nanometers for display
+            Oxide_Thickness: [this.Oxide_Thickness*1e9, "nm"],  // Convert to nanometers for display
+            Na: [this.Na*1e-6, "cm^-3"],  // Convert to cm^-3 for display
+            Nd: [this.Nd*1e-6, "cm^-3"],  // Convert to cm^-3 for display
+            Source_Drain_Length: [this.Source_Drain_Length*1e9, "nm"],  // Convert to nanometers for display
+            Source_Drain_Area: [this.Source_Drain_Area, "m^2"],  // Convert to square meters for display
+            Vt: [this.Vt, "V"],
+            k: [this.k, "J/K"],
+            T: [this.T, "K"],  
+        };
+    }
 
     public calculateDrainCurrent(RealFet: boolean): number {
         const sign = this.Type === 'N' ? 1 : -1;
