@@ -1,4 +1,4 @@
-import { Component, Input, computed, signal, WritableSignal } from '@angular/core';
+import { Component, Input, computed, signal, WritableSignal, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Mosfet } from './models/mosfet';
 
@@ -16,6 +16,12 @@ export class MosfetComponent {
   @Input({ required: true })
   mosfet!: Mosfet;
  
+
+  @Output()
+propertyChange = new EventEmitter<{
+  key: string;
+  value: number;
+}>();
   
   
 
@@ -47,19 +53,14 @@ export class MosfetComponent {
     return this.mosfet.getValues();
   }
 
- changeMosfetProperty(key: string, event: Event) {
-  const value = (event.target as HTMLInputElement).value;
+changeMosfetProperty(key: string, event: Event) {
+  const value = Number((event.target as HTMLInputElement).value);
 
-  console.log(key, value);
-
-  this.mosfet.state.update(m => ({
-    ...m,
-    [key]: Number(value)
-  }));
+  this.propertyChange.emit({
+    key,
+    value
+  });
 }
-
-  
-
   // Beschriftung Gate-Spannung
   get vgsLabel(): string {
     return `Vgs = ${this.mosfet.state().Vgs.toFixed(1)}V  (${this.conducting ? '▶ leitet' : '✕ sperrt'})`;

@@ -33,6 +33,16 @@ export class AppComponent {
     },
   ]);
 
+
+  changeMosfetProperty(
+  mosfet: Mosfet,
+  change: {key: string, value: number}
+) {
+  mosfet.state.update(m => ({
+    ...m,
+    [change.key]: change.value
+  }));
+}
  
   toggleLib(): void {
     this.libOpen.update((open: boolean) => !open);
