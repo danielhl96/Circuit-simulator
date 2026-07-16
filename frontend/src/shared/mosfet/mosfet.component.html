@@ -2,7 +2,7 @@
 
   
   <div class="w-50 h-full border border-gray-300 rounded-lg bg-base-100 flex  flex-col items-center justify-center p-3 m-1">
-            <p class="text-sm text-black">MOSFET-Details</p>
+    <div class ="divider divider-primary">MOSFET</div>
           @for (entry of mosfetValues | keyvalue; track entry.key) {
   <div class="flex flex-row items-center justify-between w-full">
     <span class="text-xs text-gray-600">{{ entry.key }}</span>
@@ -118,10 +118,10 @@
       [attr.x]="gateX" y="110" [attr.width]="gateLength" [attr.height]="gateWidth"
       fill="#555" rx="2"
       class="cursor-pointer hover:opacity-80"
-      (click)="selectRegion('Gate – Steuerspannung Vgs = ' + this.mosfet.Vgs + 'V. Erzeugt E-Feld durch Oxid')"/>
+      (click)="selectRegion('Gate – Steuerspannung Vgs = ' + this.mosfet.state().Vgs + 'V. Erzeugt E-Feld durch Oxid')"/>
     <text [attr.x]="svgW / 2" y="134" text-anchor="middle"
       font-size="13" fill="white" font-weight="bold" style="pointer-events:none">
-      Gate  (Vgs = {{ mosfet.Vgs.toFixed(1) }}V)
+      Gate  (Vgs = {{ mosfet.state().Vgs.toFixed(1) }}V)
     </text>
 
     <!-- ── Anschlüsse ─────────────────────────────────────────── -->
@@ -148,4 +148,20 @@
 
   </svg>
 </div>
+
+ <div class="w-50 h-full border border-gray-300 rounded-lg bg-base-100 flex  flex-col items-center justify-center p-3 m-1">
+    <div class ="divider divider-primary">MOSFET</div>
+          @for (entry of mosfetValues | keyvalue; track entry.key) {
+  <div class="flex flex-row items-center justify-center w-full px-4">
+ 
+<input 
+  (change)="changeMosfetProperty(entry.key, $event)"
+  placeholder="{{ entry.key }}"
+  type="text"
+  class="input input-xs input-bordered"
+/>
+  </div>
+}
+</div>
+
 </div>

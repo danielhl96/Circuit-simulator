@@ -1,4 +1,4 @@
-import { Component, Input, computed, signal } from '@angular/core';
+import { Component, Input, computed, signal, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Mosfet } from './models/mosfet';
 
@@ -13,17 +13,11 @@ export class MosfetComponent {
   @Input() gateLength: number = 300;  // px Breite des Gate/Kanal-Bereichs
   @Input() gateWidth:  number = 38;   // px Höhe des Gate-Metalls
   @Input() label:      string = 'N-Kanal MOSFET (Enhancement)';
-  mosfet: Mosfet;
-   
-   
-   constructor() {
-      this.mosfet = new Mosfet();
-      this.mosfet.Vds = 5;  // V
-      this.mosfet.Vgs = 3;
-      this.mosfet.Vsb = 0;
-      this.mosfet.Vth = 1;
-      
-    }
+  @Input({ required: true })
+  mosfet!: Mosfet;
+ 
+  
+  
 
   // ── Abgeleitete Geometrie ────────────────────────────────────
   // SVG-Gesamtbreite fest, Gate zentriert
@@ -41,7 +35,7 @@ export class MosfetComponent {
   get deplY():   number { return this.subY - this.deplH + 40; }
 
   // Leitend wenn Vgs >= Vth
-  get conducting(): boolean { return this.mosfet.Vgs >= this.mosfet.Vth; }
+  get conducting(): boolean { return this.mosfet.state().Vgs >= this.mosfet.state().Vth; }
 
   // Kanal (Inversionsschicht) – nur sichtbar wenn leitend
   get channelColor(): string {
@@ -49,12 +43,26 @@ export class MosfetComponent {
   }
 
   get mosfetValues(): Record<string, [number, string]> {
+    console.log('Getting MOSFET values...');
     return this.mosfet.getValues();
   }
 
+ changeMosfetProperty(key: string, event: Event) {
+  const value = (event.target as HTMLInputElement).value;
+
+  console.log(key, value);
+
+  this.mosfet.state.update(m => ({
+    ...m,
+    [key]: Number(value)
+  }));
+}
+
+  
+
   // Beschriftung Gate-Spannung
   get vgsLabel(): string {
-    return `Vgs = ${this.mosfet.Vgs.toFixed(1)}V  (${this.conducting ? '▶ leitet' : '✕ sperrt'})`;
+    return `Vgs = ${this.mosfet.state().Vgs.toFixed(1)}V  (${this.conducting ? '▶ leitet' : '✕ sperrt'})`;
   }
 
   // Klick auf Bereich

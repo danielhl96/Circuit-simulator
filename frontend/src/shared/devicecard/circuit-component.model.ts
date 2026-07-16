@@ -5,6 +5,7 @@ export class CircuitComponent {
     public svgSrc: string,
     public symbol: string,
     public badge: string,
-    public count: number = 0
+    public id: number = 0,
+    public device:any = null,  // Optional: Store the actual device instance (e.g., Mosfet) for further calculations
   ) {}
 }

@@ -4,6 +4,7 @@ import { DeviceCardComponent } from '../shared/devicecard/device-card.component'
 import { CircuitComponent } from '../shared/devicecard/circuit-component.model';
 import { NavbarComponent } from '../shared/navbar/navbar.component';
 import { MosfetComponent } from '../shared/mosfet/mosfet.component';
+import { Mosfet } from '../shared/mosfet/models/mosfet';
 
 @Component({
   selector: 'app-root',
@@ -14,59 +15,53 @@ import { MosfetComponent } from '../shared/mosfet/mosfet.component';
 })
 export class AppComponent {
   title = 'circuit-simulator';
-
-  components = signal<CircuitComponent[]>([
-    
-    {
-      symbol: 'Q',
-      svgSrc: 'mosfet-symbol.svg',
-      name: 'Transistoren',
-      description: 'BJT, MOSFET und JFET-Transistoren.',
-      badge: 'badge-info',
-      count: 0,
-    },
-  ]);
-
   simulationStatus = signal<'idle' | 'running' | 'done'>('idle');
   addedComponents = signal<CircuitComponent[]>([]);
   totalComponents = signal<number>(0);
   totalConnections = signal<number>(0);
   libOpen = signal<boolean>(true);
 
+  components = signal<CircuitComponent[]>([
+    {
+      symbol: 'Q',
+      svgSrc: 'mosfet-symbol.svg',
+      name: 'Transistoren',
+      description: 'BJT, MOSFET und JFET-Transistoren.',
+      badge: 'badge-info',
+      id: this.addedComponents().length + 1,
+      device:     new Mosfet()
+    },
+  ]);
+
+ 
   toggleLib(): void {
     this.libOpen.update((open: boolean) => !open);
   }
 
   addComponent(index: number): void {
-    this.addedComponents.update((list: CircuitComponent[]) => [...list, { ...this.components()[index], count: 1 }]);  
+    this.addedComponents.update((list: CircuitComponent[]) => [...list, { ...this.components()[index], count: 1, device: new Mosfet() }]);  
     this.totalComponents.update((n: number) => n + 1);
   }
 
   removeComponent(addedIndex: number): void {
     const list = this.addedComponents();
     if (addedIndex < 0 || addedIndex >= list.length) return;
-
-    const removed = list[addedIndex];
-
+    const component = list[addedIndex];
+    if (component.device instanceof Mosfet) {
+      (component.device as Mosfet).deleteMosfet();
+    }
     // addedComponents: Element an Position entfernen
-    this.addedComponents.update((l: CircuitComponent[]) => [
+    this.addedComponents.update((l: CircuitComponent[]) =>  [
       ...l.slice(0, addedIndex),
       ...l.slice(addedIndex + 1),
-    ]);
+    ] );
     this.totalComponents.update((n: number) => n - 1);
   }
 
-  startSimulation(): void {
-    if (this.totalComponents() === 0) return;
-    this.simulationStatus.set('running');
-    setTimeout(() => this.simulationStatus.set('done'), 1500);
-  }
+startSimulation(index: number): void {
+  console.log('Simulation gestartet');
 
-  resetCircuit(): void {
-    const reset = this.components().map((c: CircuitComponent) => ({ ...c, count: 0 }));
-    this.components.set(reset);
-    this.totalComponents.set(0);
-    this.totalConnections.set(0);
-    this.simulationStatus.set('idle');
-  }
+  this.addedComponents()[index].device.update();
+  this.simulationStatus.set('running');
+}
 }
