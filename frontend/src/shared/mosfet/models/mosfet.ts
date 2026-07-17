@@ -57,8 +57,6 @@ export class Mosfet {
         Id: this.calculateDrainCurrent(true, m.Vgs, m.Vds),
         
     }));
-
-    console.log('Updated MOSFET state:', this.state());
   }
 
   public getSimulationResults(): { Vds: number[]; Id: number[] } {

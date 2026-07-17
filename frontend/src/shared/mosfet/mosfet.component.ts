@@ -16,7 +16,8 @@ export class MosfetComponent {
   @Input() label:      string = 'N-Kanal MOSFET (Enhancement)';
   @Input({ required: true })
   mosfet!: Mosfet;
-
+ @ViewChild(CharacteristicCurvesComponent)
+  curve!: CharacteristicCurvesComponent;
  
 
   @Output()
@@ -53,6 +54,11 @@ propertyChange = new EventEmitter<{
   get mosfetValues(): Record<string, [number, string]> {
     console.log('Getting MOSFET values...');
     return this.mosfet.getValues();
+  }
+
+  get simulationResults(): number[] {
+    console.log('Getting simulation results...');
+    return this.mosfet.getSimulationResults().Id;
   }
 
 changeMosfetProperty(key: string, event: Event) {

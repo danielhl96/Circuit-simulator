@@ -1,4 +1,4 @@
-import { Component,input,Input, ViewChild } from '@angular/core';
+import { Component,Input, ViewChild } from '@angular/core';
 import { NgApexchartsModule,ChartComponent , ApexChart, ApexAxisChartSeries, ApexXAxis } from 'ng-apexcharts';
 
 @Component({
@@ -52,6 +52,16 @@ export class CharacteristicCurvesComponent {
     this.title.text = value;
   }
 
+  @Input()
+  set seriesData(value: number[]) {
+    this.series = [
+      {
+        name: 'Current',
+        data: value
+      }
+    ];
+  }
+
   stroke = {
     curve: 'smooth' as const,
     width: 3
@@ -64,8 +74,5 @@ export class CharacteristicCurvesComponent {
   xaxis: ApexXAxis = {
     categories: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
   };
-
- 
-
 
 }
