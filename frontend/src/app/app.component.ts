@@ -1,15 +1,16 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, ViewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { DeviceCardComponent } from '../shared/devicecard/device-card.component';
 import { CircuitComponent } from '../shared/devicecard/circuit-component.model';
 import { NavbarComponent } from '../shared/navbar/navbar.component';
 import { MosfetComponent } from '../shared/mosfet/mosfet.component';
 import { Mosfet } from '../shared/mosfet/models/mosfet';
+import { CharacteristicCurvesComponent } from '../shared/characteristic-curves/characteristic-curves.component';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
-  imports: [RouterOutlet, DeviceCardComponent, NavbarComponent, MosfetComponent],
+  standalone: true, 
+  imports: [RouterOutlet, DeviceCardComponent, NavbarComponent, MosfetComponent,CharacteristicCurvesComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
@@ -20,6 +21,10 @@ export class AppComponent {
   totalComponents = signal<number>(0);
   totalConnections = signal<number>(0);
   libOpen = signal<boolean>(true);
+
+
+    @ViewChild(CharacteristicCurvesComponent)
+  curve!: CharacteristicCurvesComponent;
 
   components = signal<CircuitComponent[]>([
     {
@@ -33,6 +38,7 @@ export class AppComponent {
     },
   ]);
 
+  
 
   changeMosfetProperty(
   mosfet: Mosfet,
@@ -71,6 +77,7 @@ export class AppComponent {
 startSimulation(index: number): void {
   console.log('Simulation gestartet');
 
+  this.curve.updateCharacteristicCurve(this.addedComponents()[index].device.getSimulationResults().Id);
   this.addedComponents()[index].device.update();
   this.simulationStatus.set('running');
 }

@@ -1,5 +1,6 @@
 
-import { signal, WritableSignal } from '@angular/core';
+import { signal, ViewChild } from '@angular/core';
+import { CharacteristicCurvesComponent } from '../../characteristic-curves/characteristic-curves.component';
 export class Mosfet {
     public readonly ELECTRON_MOBILITY: number = 0.05; // m^2/Vs
     public readonly THRESHOLD_VOLTAGE: number = 1.0; // V
@@ -11,7 +12,10 @@ export class Mosfet {
     public readonly eps_s = this.eps_0 * this.eps_r_si;
     public readonly MIN_RESISTANCE = 1e-6; // Minimum resistance to avoid division by zero
     public readonly MAX_RESISTANCE = 1e6; // Maximum resistance to avoid unrealistic values
-
+    public simulationsResults = signal({
+        Vds: [] as number[],
+        Id: [] as number[]
+    });
     public state = signal({
     Vds: 0,
     Vgs: 0,
@@ -53,7 +57,28 @@ export class Mosfet {
         Id: this.calculateDrainCurrent(true, m.Vgs, m.Vds),
         
     }));
+
     console.log('Updated MOSFET state:', this.state());
+  }
+
+  public getSimulationResults(): { Vds: number[]; Id: number[] } {
+    const VgsValues = [0, 1, 2, 3, 4, 5]; // Example gate-source voltages
+    const VdsValues = Array.from({ length: 11 }, (_, i) => i); // Vds from 0 to 10V
+
+    const results: { Vds: number[]; Id: number[] } = {
+      Vds: [],
+      Id: []
+    };
+
+   
+      for (const Vds of VdsValues) {
+        const Id = this.calculateDrainCurrent(true, 5, Vds);
+        results.Vds.push(Vds);
+        results.Id.push(Id);
+      }
+    
+
+    return results;
   }
 
   public deleteMosfet(): void {
@@ -90,6 +115,16 @@ export class Mosfet {
     }));
 
   }
+
+
+    public calculateDrainCurrentbyUds(vgs: number): number[] {
+        const results: number[] = [];
+        for(let Vds = 0; Vds <= 10; Vds += 1) {
+            results.push(this.calculateDrainCurrent(true, vgs, Vds));
+        }
+        return results;
+       
+    }
 
     public getValues(): Record<string, [number,string]> {
         //get all the relevant values of the MOSFET for display or further calculations

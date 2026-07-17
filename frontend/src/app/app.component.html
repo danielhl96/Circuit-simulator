@@ -25,6 +25,7 @@
      </div>
     }
      <!-- ── Schaltplan ───────────────────────────────────────── -->
+      <div class="flex flex-row">
     <div class="flex-1 p-4 m-2 border border-gray-300 overflow-y-auto rounded-lg h-[85dvh] bg-base-100">
       
       @if (addedComponents().length === 0) {
@@ -42,7 +43,12 @@
         } @else {
           <div class="badge {{ added.badge }} m-1">{{ added.symbol }}</div>
         }
+       
       }
+      @if(addedComponents().length > 0) {
+       <app-characteristic-curves  [headline]="'Ausgangskennlinienfeld'"></app-characteristic-curves>
+      }
+        </div>
     </div>
   <router-outlet />
 </div>

@@ -1,11 +1,12 @@
-import { Component, Input, computed, signal, WritableSignal, EventEmitter, Output } from '@angular/core';
+import { Component, Input, computed, signal, WritableSignal, EventEmitter, Output,ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Mosfet } from './models/mosfet';
+import { CharacteristicCurvesComponent } from '../characteristic-curves/characteristic-curves.component';
 
 @Component({
   selector: 'app-mosfet-2d',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, CharacteristicCurvesComponent],
   templateUrl: './mosfet.component.html',
 })
 export class MosfetComponent {
@@ -15,6 +16,7 @@ export class MosfetComponent {
   @Input() label:      string = 'N-Kanal MOSFET (Enhancement)';
   @Input({ required: true })
   mosfet!: Mosfet;
+
  
 
   @Output()
