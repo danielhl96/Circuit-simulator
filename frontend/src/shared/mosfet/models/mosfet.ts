@@ -168,6 +168,7 @@ export class Mosfet {
             Gate_Length: [m.Gate_Length*1e9, "nm"],  // Convert to nanometers for display
             Gate_Width: [m.Gate_Width*1e9, "nm"],  // Convert to nanometers for display
             Oxide_Thickness: [m.Oxide_Thickness*1e9, "nm"],  // Convert to nanometers for display
+            Cox: [m.Cox, "F/m^2"],
             Na: [m.Na*1e-6, "cm^-3"],  // Convert to cm^-3 for display
             Nd: [m.Nd*1e-6, "cm^-3"],  // Convert to cm^-3 for display
             Source_Drain_Length: [m.Source_Drain_Length*1e9, "nm"],  // Convert to nanometers for display
