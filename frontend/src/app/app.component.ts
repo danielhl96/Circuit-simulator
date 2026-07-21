@@ -34,25 +34,8 @@ export class AppComponent {
       badge: 'badge-info',
       id: this.addedComponents().length + 1,
       device:     new Mosfet()
-    },
-    {
-      symbol: 'R',
-      svgSrc: 'resistor-symbol.svg',
-      name: 'Widerstände',
-      description: 'Verschiedene Arten von Widerständen.',
-      badge: 'badge-warning',
-      id: this.addedComponents().length + 1,
-      device:     null
-    },
-    {
-      symbol: 'D',
-      svgSrc: 'diode-symbol.svg',
-      name: 'Dioden',
-      description: 'Verschiedene Arten von Dioden.',
-      badge: 'badge-success',
-      id: this.addedComponents().length + 1,
-      device:     null
     }
+    
   ]);
 
   
@@ -93,8 +76,6 @@ export class AppComponent {
 
 startSimulation(index: number): void {
   console.log('Simulation gestartet');
-
-  this.addedComponents()[index].device.getSimulationResults().Id
   this.addedComponents()[index].device.update();
   this.simulationStatus.set('running');
 }

@@ -14,7 +14,9 @@ export class Mosfet {
     public readonly MAX_RESISTANCE = 1e6; // Maximum resistance to avoid unrealistic values
     public simulationsResults = signal({
         Vds: [] as number[],
-        Id: [] as number[]
+        Vgs: [] as number[],
+        Id_Vgs: [] as number[],
+        Id_Vds: [] as number[]
     });
     public state = signal({
     Vds: 0,
@@ -28,7 +30,7 @@ export class Mosfet {
     Drain_Node: '',
     Gate_Node: '',
     Type: 'N',
-    Gate_Length: 10e-9,
+    Gate_Length: 5e-9,
     Gate_Width: 7e-9,
     Oxide_Thickness: 1e-9,
     Vsb: 0,
@@ -51,31 +53,69 @@ export class Mosfet {
     ) {}
 
   update() {
-    this.state.update(m => ({
-        
-      ...m,
-        Id: this.calculateDrainCurrent(true, m.Vgs, m.Vds),
-        
-    }));
+    this.state.update( m => {
+      // 1. Cox: reine Geometrie (ε_ox / t_ox), keine Abhängigkeiten
+      const Cox = this.calculcateCox();
+
+      // 2. Vth: hängt von Cox, Na/Nd, Vsb, Vfb, T ab
+      const Vth = this.calculateThresholdVoltageWith(Cox, m);
+
+      // 3. Id (1. Iteration): nutzt neues Vth/Cox, aber altes lambda (Startwert)
+      const Id0 = this.calculateDrainCurrentWith(true, m.Vgs, m.Vds, Vth, Cox, m.lambda, m.Gate_Length, m.Gate_Width);
+
+      // 4. lambda: hängt von Id0 ab
+      const lambda = this.calculateChannelLengthModulationWith(Id0, m.Vgs, Vth, m.Vds, m.Gate_Length);
+
+      // 5. Id (2. Iteration): jetzt mit korrektem lambda → physikalisch konsistent
+      const Id = this.calculateDrainCurrentWith(true, m.Vgs, m.Vds, Vth, Cox, lambda, m.Gate_Length, m.Gate_Width);
+
+      // 6. gm: hängt von Vgs, Vth, Cox, W/L ab
+      const gm = this.calculateTransconductanceWith(m.Vgs, Vth, Cox, m.Gate_Width, m.Gate_Length);
+
+      // 7. ro: hängt von lambda und finalem Id ab
+      const ro = this.calculateOutputResistanceWith(m.Vgs, Vth, m.Vds, lambda, Id);
+
+      // 8. Gate_Length effektiv: hängt von lambda ab
+      const Gate_Length = this.calculateChannelLengthAfterModulationWith(m.Gate_Length, lambda, m.Vgs, Vth, m.Vds);
+
+      return { ...m, Cox, Vth, Id, lambda, gm, ro, Gate_Length };
+    });
   }
 
-  public getSimulationResults(): { Vds: number[]; Id: number[] } {
-    const VgsValues = [0, 1, 2, 3, 4, 5]; // Example gate-source voltages
-    const VdsValues = Array.from({ length: 11 }, (_, i) => i); // Vds from 0 to 10V
+  public calculcateCox(): number {
+    // Cox = ε_ox / t_ox
+    const eps_ox = 3.45e-11; // Relative permittivity of SiO2 in F/m
+    return eps_ox / this.state().Oxide_Thickness;
+  }
 
-    const results: { Vds: number[]; Id: number[] } = {
-      Vds: [],
-      Id: []
+
+  public getSimulationResultsByVgs(): {Vgs: number[]; Id_Vgs: number[]; } {
+    const VgsValues = [0, 1, 2, 3, 4, 5]; // Example gate-source voltages
+    const results: { Vgs: number[]; Id_Vgs: number[] } = {
+      Vgs: [],
+      Id_Vgs: []
     };
 
-   
+  for (const Vgs of VgsValues) {
+          const Id = this.calculateDrainCurrent(true, Vgs, 5);
+          results.Vgs.push(Vgs);
+          results.Id_Vgs.push(Id);
+        }
+        return results;
+      }
+
+  public getSimulationResultsByVds(): { Vds: number[]; Id_Vds: number[] } {
+    const VdsValues = Array.from({ length: 11 }, (_, i) => i); // Vds from 0 to 10V
+
+    const results: { Vds: number[]; Id_Vds: number[] } = {
+      Vds: [],
+      Id_Vds: []
+    };
       for (const Vds of VdsValues) {
         const Id = this.calculateDrainCurrent(true, 5, Vds);
         results.Vds.push(Vds);
-        results.Id.push(Id);
+        results.Id_Vds.push(Id);
       }
-    
-
     return results;
   }
 
@@ -94,7 +134,7 @@ export class Mosfet {
       Drain_Node: '',
       Gate_Node: '',    
     Type: 'N',
-    Gate_Length: 10e-9,
+    Gate_Length:5e-9,
     Gate_Width: 7e-9,
     Oxide_Thickness: 1e-9,
     Vsb: 0,
@@ -113,17 +153,6 @@ export class Mosfet {
     }));
 
   }
-
-
-    public calculateDrainCurrentbyUds(vgs: number): number[] {
-        const results: number[] = [];
-        for(let Vds = 0; Vds <= 10; Vds += 1) {
-            results.push(this.calculateDrainCurrent(true, vgs, Vds));
-        }
-        return results;
-       
-    }
-
     public getValues(): Record<string, [number,string]> {
         //get all the relevant values of the MOSFET for display or further calculations
          const m = this.state();
@@ -149,25 +178,35 @@ export class Mosfet {
         };
     }
 
-    public calculateDrainCurrent(RealFet: boolean,Vgs:number,Vds:number): number {
-        const sign = this.state().Type === 'N' ? 1 : -1;
-        
-        const Vth = sign * this.state().Vth;
-        const kn = this.ELECTRON_MOBILITY * this.state().Cox * (this.state().Gate_Width / this.state().Gate_Length);
-
-        if (Vgs <= Vth) {
+    /** Parametrisierte Kernberechnung – liest kein this.state() */
+    public calculateDrainCurrentWith(
+        RealFet: boolean, Vgs: number, Vds: number,
+        Vth: number, Cox: number, lambda: number,
+        Gate_Length: number, Gate_Width: number,
+        type: string = this.state().Type
+    ): number {
+        const sign = type === 'N' ? 1 : -1;
+        const Vth_signed = sign * Vth;
+        const kn = this.ELECTRON_MOBILITY * Cox * (Gate_Width / Gate_Length);
+        if (Vgs <= Vth_signed) {
             return 0; // Cutoff region
-        } else if (Vds < (Vgs - Vth)) {
+        } else if (Vds < (Vgs - Vth_signed)) {
             // Triode region
-            return sign * kn * ((Vgs - Vth) * Vds - (Vds ** 2) / 2);
+            return sign * kn * ((Vgs - Vth_signed) * Vds - (Vds ** 2) / 2);
         } else {
             // Saturation region
             if (RealFet) {
-                return sign * 0.5 * kn * (Vgs - Vth) ** 2 * (1 + this.state().lambda * Vds);
+                return sign * 0.5 * kn * (Vgs - Vth_signed) ** 2 * (1 + lambda * Vds);
             } else {
-                return sign * 0.5 * kn * (Vgs - Vth) ** 2;
+                return sign * 0.5 * kn * (Vgs - Vth_signed) ** 2;
             }
         }
+    }
+
+    /** Wrapper für externe Aufrufer (liest aktuellen state) */
+    public calculateDrainCurrent(RealFet: boolean, Vgs: number, Vds: number): number {
+        const m = this.state();
+        return this.calculateDrainCurrentWith(RealFet, Vgs, Vds, m.Vth, m.Cox, m.lambda, m.Gate_Length, m.Gate_Width, m.Type);
     }
 
     public calculateBuiltInPotential(): number {
@@ -184,93 +223,113 @@ export class Mosfet {
             (this.ELECTRON_CHARGE * this.state().Nd * this.ELECTRON_MOBILITY * this.state().Source_Drain_Area);
     }
 
-    public calculateThresholdVoltage(): number {
-        const thermalVoltage = (this.state().k * this.state().T) / this.ELECTRON_CHARGE;
-
-        // N-Kanal: p-Substrat → Na relevant, phi_F positiv
-        // P-Kanal: n-Substrat → Nd relevant, phi_F negativ → Vth negativ
-        const isNChannel = this.state().Type === 'N';
-        const dopingSubstrate = isNChannel ? this.state().Na : this.state().Nd;
+    /** Parametrisierte Kernberechnung – liest kein this.state() */
+    public calculateThresholdVoltageWith(Cox: number, m: ReturnType<typeof this.state>): number {
+        const thermalVoltage = (m.k * m.T) / this.ELECTRON_CHARGE;
+        const isNChannel = m.Type === 'N';
+        const dopingSubstrate = isNChannel ? m.Na : m.Nd;
         const sign = isNChannel ? 1 : -1;
 
-        // Fermi-Potential
         const phi_F = sign * thermalVoltage *
             Math.log(dopingSubstrate / this.INTRINSIC_CARRIER_CONCENTRATION);
-
-        // Oberflächenpotential bei starker Inversion: 2 * phi_F
         const surfacePotential = 2 * phi_F;
 
-        // Body-Effekt: Vsb verschiebt Vth
-        // Qb = sqrt(2 * q * eps_s * Na * (2*phi_F + Vsb))
-        const bodyTerm = Math.abs(surfacePotential) + sign * this.state().Vsb;
+        const bodyTerm = Math.abs(surfacePotential) + sign * m.Vsb;
         const bulkChargeTerm = Math.sqrt(
             2 * this.ELECTRON_CHARGE * this.eps_s * dopingSubstrate * Math.max(bodyTerm, 0)
         );
-
-        // Vth = Vfb + 2*phi_F + Qb/Cox
-        this.state().Vth = this.state().Vfb + surfacePotential + sign * (bulkChargeTerm / this.state().Cox);
-
-        return this.state().Vth;
+        return m.Vfb + surfacePotential + sign * (bulkChargeTerm / Cox);
     }
 
+    /** Wrapper für externe Aufrufer */
+    public calculateThresholdVoltage(): number {
+        return this.calculateThresholdVoltageWith(this.state().Cox, this.state());
+    }
+
+    /** Parametrisierte Kernberechnung */
+    public calculateTransconductanceWith(
+        Vgs: number, Vth: number, Cox: number,
+        Gate_Width: number, Gate_Length: number,
+        Vds: number = this.state().Vds
+    ): number {
+        const sign = this.state().Type === 'N' ? 1 : -1;
+        const Vth_signed = sign * Vth;
+        if (Vgs > Vth_signed && Vds >= (Vgs - Vth_signed)) {
+            return this.ELECTRON_MOBILITY * Cox * (Gate_Width / Gate_Length) * (Vgs - Vth_signed);
+        }
+        return 0;
+    }
+
+    /** Wrapper für externe Aufrufer */
     public calculateTransconductance(): number {
-        if (this.state().Vgs > this.state().Vth && this.state().Vds >= (this.state().Vgs - this.state().Vth)) {
-            this.state().gm = this.ELECTRON_MOBILITY * this.state().Cox * (this.state().Gate_Width / this.state().Gate_Length) * (this.state().Vgs - this.state().Vth);
-            return this.state().gm;
-        } else if(this.state().Vgs <= this.state().Vth) {
-            this.state().gm = 0; // Transconductance is zero in cutoff and triode regions
-        }
-
-        return this.state().gm;
+        const m = this.state();
+        return this.calculateTransconductanceWith(m.Vgs, m.Vth, m.Cox, m.Gate_Width, m.Gate_Length, m.Vds);
     }
 
+    /** Parametrisierte Kernberechnung */
+    public calculateOutputResistanceWith(
+        Vgs: number, Vth: number, Vds: number,
+        lambda: number, Id: number,
+        type: string = this.state().Type
+    ): number {
+        const sign = type === 'N' ? 1 : -1;
+        const Vth_signed = sign * Vth;
+        if (Vgs < Vth_signed) return this.MAX_RESISTANCE;
+        const Vds_sat = Vgs - Vth_signed;
+        if (Vds >= Vds_sat && lambda > 0 && Id > 0) {
+            return 1 / (lambda * Id);
+        }
+        return this.MAX_RESISTANCE;
+    }
+
+    /** Wrapper für externe Aufrufer */
     public calculateOutputResistance(Id0: number): number {
-        if(this.state().Vgs < this.state().Vth){
-            this.state().ro = this.MAX_RESISTANCE; // Very high resistance in cutoff region
-            return this.state().ro;
-        }
-        const Vds_sat = this.state().Vgs - this.state().Vth;
-        if (this.state().Vds >= Vds_sat) {
-            // Saturation region
-            this.state().ro = 1 / (this.state().lambda * Id0);
-        } else {
-            // Triode region
-            this.state().ro = this.MAX_RESISTANCE; // Very high resistance in triode region
-        }
-        return this.state().ro;
+        const m = this.state();
+        return this.calculateOutputResistanceWith(m.Vgs, m.Vth, m.Vds, m.lambda, Id0, m.Type);
     }   
 
-    public calculateChannelLengthModulation(Id0: number): number {
-        if(Id0 <= 0){
-            this.state().lambda = 0; // Avoid division by zero or negative drain current
-            return this.state().lambda;
+    /** Parametrisierte Kernberechnung */
+    public calculateChannelLengthModulationWith(
+        Id0: number, Vgs: number, Vth: number,
+        Vds: number, Gate_Length: number,
+        type: string = this.state().Type
+    ): number {
+        if (Id0 <= 0) return 0;
+        const sign = type === 'N' ? 1 : -1;
+        const Vth_signed = sign * Vth;
+        if (Vgs > Vth_signed && Vds >= (Vgs - Vth_signed)) {
+            return 1 / (Gate_Length * Math.sqrt(Id0));
         }
-        if (this.state().Vgs > this.state().Vth && this.state().Vds >= (this.state().Vgs - this.state().Vth)) {
-            this.state().lambda = 1 / (this.state().Gate_Length * Math.sqrt(Id0)); // Channel length modulation parameter in saturation region
-        } else {
-            this.state().lambda = 0; // No channel length modulation in cutoff and triode regions
-        }
-        return this.state().lambda;
+        return 0;
     }
 
-    public calculateChannelLengthAfterModulation(): number {
-    // Check if the MOSFET is in saturation region
-    if (this.state().Vgs > this.state().Vth && this.state().Vds >= (this.state().Vgs - this.state().Vth)) {
-        const Vds_sat = this.state().Vgs - this.state().Vth;
-        
-        // The modulation only acts with the voltage that exceeds Vds_sat
-        const Vds_excess = this.state().Vds - Vds_sat; 
-        
-        // Physically more accurate reduction of the channel length
-        const L_eff = this.state().Gate_Length / (1 + this.state().lambda * Vds_excess);
-        
-        // Safety check: The channel length should not become negative or unrealistically short
-        return Math.max(L_eff, this.state().Gate_Length * 0.1); 
+    /** Wrapper für externe Aufrufer */
+    public calculateChannelLengthModulation(Id0: number): number {
+        const m = this.state();
+        return this.calculateChannelLengthModulationWith(Id0, m.Vgs, m.Vth, m.Vds, m.Gate_Length, m.Type);
     }
-    
-    // In cutoff and linear (triode) regions, L remains unchanged
-    return this.state().Gate_Length;
-}
+
+    /** Parametrisierte Kernberechnung */
+    public calculateChannelLengthAfterModulationWith(
+        Gate_Length: number, lambda: number,
+        Vgs: number, Vth: number, Vds: number,
+        type: string = this.state().Type
+    ): number {
+        const sign = type === 'N' ? 1 : -1;
+        const Vth_signed = sign * Vth;
+        if (Vgs > Vth_signed && Vds >= (Vgs - Vth_signed)) {
+            const Vds_excess = Vds - (Vgs - Vth_signed);
+            const L_eff = Gate_Length / (1 + lambda * Vds_excess);
+            return Math.max(L_eff, Gate_Length * 0.1);
+        }
+        return Gate_Length;
+    }
+
+    /** Wrapper für externe Aufrufer */
+    public calculateChannelLengthAfterModulation(): number {
+        const m = this.state();
+        return this.calculateChannelLengthAfterModulationWith(m.Gate_Length, m.lambda, m.Vgs, m.Vth, m.Vds, m.Type);
+    }
 
 
 }

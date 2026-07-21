@@ -16,7 +16,6 @@
     <div class="grid grid-cols-1 justify-start items-start sm:grid-cols-1 lg:grid-cols-1 max-h-96 overflow-y-auto gap-4 mb-2">
       @for (component of components(); track component.symbol; let i = $index) {
         <app-device-card
-        
           [component]="component"
           (add)="addComponent(i)">
         </app-device-card>
@@ -26,7 +25,7 @@
     }
      <!-- ── Schaltplan ───────────────────────────────────────── -->
       <div class="flex flex-row">
-    <div class="flex-1 p-4 m-2 border border-gray-300 overflow-y-auto rounded-lg h-[85dvh] bg-base-100">
+    <div class="flex-1 p-4 m-2 border border-gray-300 w-[80dvw] overflow-y-auto rounded-lg h-[85dvh] bg-base-100">
       
       @if (addedComponents().length === 0) {
         <p class="text-sm text-gray-400 italic">Kein Bauteil ausgewählt – klicke in der Library auf ein Bauteil.</p>
@@ -40,14 +39,10 @@
          (propertyChange)="changeMosfetProperty(addedComponents()[$index].device, $event)"
   [mosfet]="addedComponents()[$index].device">
 </app-mosfet-2d>
-        } @else {
-          <div class="badge {{ added.badge }} m-1">{{ added.symbol }}</div>
-        }
+        } 
        
       }
-      @if(addedComponents().length > 0) {
-       
-      }
+      
         </div>
     </div>
   <router-outlet />

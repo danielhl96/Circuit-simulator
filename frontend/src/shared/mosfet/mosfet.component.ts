@@ -11,30 +11,27 @@ import { CharacteristicCurvesComponent } from '../characteristic-curves/characte
 })
 export class MosfetComponent {
   // ── Eingangsparameter (von außen steuerbar) ──────────────────
-  @Input() gateLength: number = 300;  // px Breite des Gate/Kanal-Bereichs
+  @Input() gateLength: number = 150;  // px Breite des Gate/Kanal-Bereichs
   @Input() gateWidth:  number = 38;   // px Höhe des Gate-Metalls
   @Input() label:      string = 'N-Kanal MOSFET (Enhancement)';
   @Input({ required: true })
   mosfet!: Mosfet;
  @ViewChild(CharacteristicCurvesComponent)
   curve!: CharacteristicCurvesComponent;
- 
-
   @Output()
 propertyChange = new EventEmitter<{
   key: string;
   value: number;
 }>();
   
-  
-
   // ── Abgeleitete Geometrie ────────────────────────────────────
   // SVG-Gesamtbreite fest, Gate zentriert
   readonly svgW = 700;
   readonly svgH = 420;
-  readonly sdWidth  = 140;  // Source/Drain Breite px
+  readonly sdWidth  =70;  // Source/Drain Breite px
   readonly subY     = 240;  // Substrat y-Start
   readonly subH     = 140;
+  private _showEditModal: WritableSignal<boolean> = signal(false);
 
   get gateX():   number { return (this.svgW - this.gateLength) / 2; }
   get gateEndX(): number { return this.gateX + this.gateLength; }
@@ -42,6 +39,10 @@ propertyChange = new EventEmitter<{
   // Depletionszone: so breit wie Gate, 80px hoch wenn Vgs < Vth
   get deplH():   number { return this.conducting ? 20 : 80; }
   get deplY():   number { return this.subY - this.deplH + 40; }
+
+  get showEditModal(): boolean {
+    return this._showEditModal();
+  }
 
   // Leitend wenn Vgs >= Vth
   get conducting(): boolean { return this.mosfet.state().Vgs >= this.mosfet.state().Vth; }
@@ -51,14 +52,21 @@ propertyChange = new EventEmitter<{
     return this.conducting ? '#2980b9' : 'none';
   }
 
+  set showEditModal(value: boolean) {
+    this._showEditModal.set(value);
+  }
+
   get mosfetValues(): Record<string, [number, string]> {
     console.log('Getting MOSFET values...');
     return this.mosfet.getValues();
   }
 
-  get simulationResults(): number[] {
-    console.log('Getting simulation results...');
-    return this.mosfet.getSimulationResults().Id;
+  get simulationResultsByVgs(): { Vgs: number[]; Id_Vgs: number[] } {
+    return this.mosfet.getSimulationResultsByVgs();
+  }
+
+  get simulationResultsByVds(): { Vds: number[]; Id_Vds: number[] } {
+    return this.mosfet.getSimulationResultsByVds();
   }
 
 changeMosfetProperty(key: string, event: Event) {
