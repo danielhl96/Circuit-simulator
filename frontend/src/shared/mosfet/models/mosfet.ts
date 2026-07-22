@@ -1,5 +1,5 @@
 
-import { signal, ViewChild } from '@angular/core';
+import { signal, Type, ViewChild } from '@angular/core';
 import { CharacteristicCurvesComponent } from '../../characteristic-curves/characteristic-curves.component';
 export class Mosfet {
     public readonly ELECTRON_MOBILITY: number = 0.05; // m^2/Vs
@@ -49,8 +49,10 @@ export class Mosfet {
   })
 
   constructor(
-  
-    ) {}
+  type: string = 'N',
+    ) { 
+        this.state.update(m => ({ ...m, Type: type }));
+    }
 
   update() {
     this.state.update( m => {
@@ -176,7 +178,16 @@ export class Mosfet {
             Vt: [m.Vt, "V"],
             k: [m.k, "J/K"],
             T: [m.T, "K"],  
+           
         };
+    }
+
+    public getType(): string {
+        return this.state().Type;
+    }
+
+    public setType(type: string): void {
+        this.state.update(m => ({ ...m, Type: type }));
     }
 
     /** Parametrisierte Kernberechnung – liest kein this.state() */

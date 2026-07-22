@@ -32,7 +32,7 @@
       }
 
       @for (added of addedComponents(); track $index) {
-        @if (added.symbol === 'Q') {
+        @if (added.symbol === 'Q' || added.symbol === 'QP') {
           <button class ="btn btn-sm btn-danger m-1" (click)="removeComponent($index)">Entfernen</button>
           <button class ="btn btn-sm btn-primary m-1" (click)="startSimulation($index)">Simulation starten</button>
          <app-mosfet-2d

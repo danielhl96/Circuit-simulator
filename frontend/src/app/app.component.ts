@@ -6,11 +6,12 @@ import { NavbarComponent } from '../shared/navbar/navbar.component';
 import { MosfetComponent } from '../shared/mosfet/mosfet.component';
 import { Mosfet } from '../shared/mosfet/models/mosfet';
 import { CharacteristicCurvesComponent } from '../shared/characteristic-curves/characteristic-curves.component';
+import { ButtonComponent } from '../shared/button/button.component';
 
 @Component({
   selector: 'app-root',
   standalone: true, 
-  imports: [RouterOutlet, DeviceCardComponent, NavbarComponent, MosfetComponent,CharacteristicCurvesComponent],
+  imports: [RouterOutlet, DeviceCardComponent, NavbarComponent, MosfetComponent,CharacteristicCurvesComponent,ButtonComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
 })
@@ -33,7 +34,17 @@ export class AppComponent {
       description: 'BJT, MOSFET und JFET-Transistoren.',
       badge: 'badge-info',
       id: this.addedComponents().length + 1,
-      device:     new Mosfet()
+      device:     new Mosfet('N')
+    },
+
+    {
+      symbol: 'QP',
+      svgSrc: 'mosfet-symbol.svg',
+      name: 'Transistoren',
+      description: 'BJT, MOSFET und JFET-Transistoren.',
+      badge: 'badge-info',
+      id: this.addedComponents().length + 1,
+      device:     new Mosfet("P")
     }
     
   ]);
@@ -55,7 +66,7 @@ export class AppComponent {
   }
 
   addComponent(index: number): void {
-    this.addedComponents.update((list: CircuitComponent[]) => [...list, { ...this.components()[index], count: 1, device: new Mosfet() }]);  
+    this.addedComponents.update((list: CircuitComponent[]) => [...list, { ...this.components()[index], count: 1, device: new Mosfet(this.components()[index].device.getType()) }]);  
     this.totalComponents.update((n: number) => n + 1);
   }
 

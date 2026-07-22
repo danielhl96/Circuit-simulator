@@ -8,7 +8,7 @@
       </svg>
     </button>
   </div>
-  <div class ="divider divider-primary">MOSFET</div>
+  <div class ="divider divider-primary">MOSFET-{{ mosfetType === 'N' ? 'N-Channel' : 'P-Channel' }}</div>
     
           @for (entry of mosfetValues | keyvalue; track entry.key) {
             
@@ -50,13 +50,13 @@
     <!-- ── Substrat p++ ──────────────────────────────────────── -->
     <rect
       x="60" [attr.y]="subY" width="580" [attr.height]="subH"
-      fill="#bdd7ee" rx="2"
+      [attr.fill]="mosfetType === 'N' ? '#bdd7ee' : '#f5b7b1'" rx="2"
       class="cursor-pointer hover:opacity-80"
-      (click)="selectRegion('p⁺⁺ Substrat – Na ≈ 10¹⁷ cm⁻³ | Majoritätsträger: Löcher ⊕')"/>
+      (click)="selectRegion(' ' + (mosfetType === 'N' ? 'p⁺⁺ Substrat – Na ≈ 10¹⁷ cm⁻³ | Majoritätsträger: Löcher ⊕' : 'n⁺⁺ Substrat – Nd ≈ 10¹⁷ cm⁻³ | Majoritätsträger: Elektronen ⊖'))"/>
     <text x="320" [attr.y]="subY + subH - 10" text-anchor="middle"
       font-size="13" font-family="sans-serif" fill="#1a4a7a" font-weight="bold"
       style="pointer-events:none">
-      p⁺⁺  Substrat  (Na ≈ 10¹⁷ cm⁻³)
+      {{ mosfetType === 'N' ? 'p⁺⁺  Substrat  (Na ≈ 10¹⁷ cm⁻³)' : 'n⁺⁺  Substrat  (Nd ≈ 10¹⁷ cm⁻³)' }}
     </text>
 
     <!-- ── Depletionszone (dynamische Höhe) ─────────────────── -->
@@ -90,22 +90,22 @@
     <!-- ── Source n++ ────────────────────────────────────────── -->
     <rect
       x="60" y="160" [attr.width]="gateX - 60" height="140"
-      fill="#5cb85c" rx="2"
+      [attr.fill]="mosfetType === 'N' ? '#5cb85c' : '#d9534f'" rx="2"
       class="cursor-pointer hover:opacity-80"
-      (click)="selectRegion('n⁺⁺ Source – Nd ≈ 10²⁰ cm⁻³ | Elektronen-Reservoir ⊖')"/>
+      (click)="selectRegion(mosfetType === 'N' ? ' n⁺⁺ Source – Nd ≈ 10²⁰ cm⁻³ | Elektronen-Reservoir ⊖' : ' p⁺⁺ Source – Na ≈ 10²⁰ cm⁻³ | Löcher-Reservoir ⊕')"/>
     <text [attr.x]="(gateX - 60) / 2 + 60" y="200" text-anchor="middle"
-      font-size="13" fill="white" font-weight="bold" style="pointer-events:none">n⁺⁺</text>
+      font-size="13" fill="white" font-weight="bold" style="pointer-events:none">{{ mosfetType === 'N' ? 'n⁺⁺' : 'p⁺⁺' }}</text>
     <text [attr.x]="(gateX - 60) / 2 + 60" y="216" text-anchor="middle"
       font-size="11" fill="#d4edda" style="pointer-events:none">Source</text>
 
     <!-- ── Drain n++ ─────────────────────────────────────────── -->
     <rect
       [attr.x]="gateEndX" y="160" [attr.width]="svgW - 60 - gateEndX" height="140"
-      fill="#5cb85c" rx="2"
+      [attr.fill]="mosfetType === 'N' ? '#5cb85c' : '#d9534f'" rx="2"
       class="cursor-pointer hover:opacity-80"
-      (click)="selectRegion('n⁺⁺ Drain – Nd ≈ 10²⁰ cm⁻³ | Elektronen-Reservoir ⊖')"/>
+      (click)="selectRegion(mosfetType === 'N' ? ' n⁺⁺ Drain – Nd ≈ 10²⁰ cm⁻³ | Elektronen-Reservoir ⊖' : ' p⁺⁺ Drain – Na ≈ 10²⁰ cm⁻³ | Löcher-Reservoir ⊕')"/>
     <text [attr.x]="gateEndX + (svgW - 60 - gateEndX) / 2" y="200" text-anchor="middle"
-      font-size="13" fill="white" font-weight="bold" style="pointer-events:none">n⁺⁺</text>
+      font-size="13" fill="white" font-weight="bold" style="pointer-events:none">{{ mosfetType === 'N' ? 'n⁺⁺' : 'p⁺⁺' }}</text>
     <text [attr.x]="gateEndX + (svgW - 60 - gateEndX) / 2" y="216" text-anchor="middle"
       font-size="11" fill="#d4edda" style="pointer-events:none">Drain</text>
 
@@ -174,9 +174,20 @@
         </div>
       }
 
-      <div class="modal-action">
-        <button class="btn btn-sm btn-primary" (click)="showEditModal = false">Übernehmen</button>
-        <button class="btn btn-sm" (click)="showEditModal = false">Schließen</button>
+      <div class="modal-action items-center justify-center">
+        <app-button
+          [setLoading]="false"
+          [setBorder]="'btn-success'"
+          (onClickEvent)="showEditModal = false">
+          Save
+        </app-button>
+        <app-button
+          [setLoading]="false"
+            [setBorder]="'btn-error'"
+          (onClickEvent)="showEditModal = false">
+          
+          Cancel
+        </app-button>
       </div>
     </div>
     <!-- Backdrop schließt Modal -->

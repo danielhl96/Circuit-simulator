@@ -1,0 +1,11 @@
+<button
+  [disabled]="setLoading"
+  (click)="onClick($event)"
+  class="btn btn-outline"
+  [ngClass]="setBorder">
+  @if (setLoading) {
+    <span class="loading loading-spinner loading-sm"></span>
+  } @else {
+    <ng-content />
+  }
+</button>

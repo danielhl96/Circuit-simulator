@@ -2,11 +2,12 @@ import { Component, Input, computed, signal, WritableSignal, EventEmitter, Outpu
 import { CommonModule } from '@angular/common';
 import { Mosfet } from './models/mosfet';
 import { CharacteristicCurvesComponent } from '../characteristic-curves/characteristic-curves.component';
+import { ButtonComponent } from '../button/button.component';
 
 @Component({
   selector: 'app-mosfet-2d',
   standalone: true,
-  imports: [CommonModule, CharacteristicCurvesComponent],
+  imports: [CommonModule, CharacteristicCurvesComponent,ButtonComponent],
   templateUrl: './mosfet.component.html',
 })
 export class MosfetComponent {
@@ -44,8 +45,11 @@ propertyChange = new EventEmitter<{
     return this._showEditModal();
   }
 
-  // Leitend wenn Vgs >= Vth
-  get conducting(): boolean { return this.mosfet.state().Vgs >= this.mosfet.state().Vth; }
+  // Leitend: N-Kanal Vgs >= Vth, P-Kanal Vgs <= Vth (Vth negativ)
+  get conducting(): boolean {
+    const { Vgs, Vth, Type } = this.mosfet.state();
+    return Type === 'N' ? Vgs >= Vth : Vgs <= Vth;
+  }
 
   // Kanal (Inversionsschicht) – nur sichtbar wenn leitend
   get channelColor(): string {
@@ -63,6 +67,14 @@ propertyChange = new EventEmitter<{
 
   get simulationResultsByVgs(): { Vgs: number[]; Id_Vgs: number[] } {
     return this.mosfet.getSimulationResultsByVgs();
+  }
+
+  get mosfetType(): string {
+    return this.mosfet.getType();
+  }
+
+  set mosfetType(type: string) {
+    this.mosfet.setType(type);
   }
 
   get simulationResultsByVds(): { Vds: number[]; Id_Vds: number[] } {
