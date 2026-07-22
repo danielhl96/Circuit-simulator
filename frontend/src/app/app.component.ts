@@ -30,7 +30,7 @@ export class AppComponent {
     {
       symbol: 'Q',
       svgSrc: 'mosfet-symbol.svg',
-      name: 'Transistoren',
+      name: 'n-Channel',
       description: 'BJT, MOSFET und JFET-Transistoren.',
       badge: 'badge-info',
       id: this.addedComponents().length + 1,
@@ -39,8 +39,8 @@ export class AppComponent {
 
     {
       symbol: 'QP',
-      svgSrc: 'mosfet-symbol.svg',
-      name: 'Transistoren',
+      svgSrc: 'mosfet-p-symbol.svg',
+      name: 'p-Channel',
       description: 'BJT, MOSFET und JFET-Transistoren.',
       badge: 'badge-info',
       id: this.addedComponents().length + 1,

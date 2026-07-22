@@ -80,7 +80,9 @@ export class Mosfet {
       // 8. Gate_Length effektiv: hängt von lambda ab
       const Gate_Length = this.calculateChannelLengthAfterModulationWith(m.Gate_Length, lambda, m.Vgs, Vth, m.Vds);
 
-      return { ...m, Cox, Vth, Id, lambda, gm, ro, Gate_Length };
+      const Id3 = this.calculateDrainCurrentWith(true, m.Vgs, m.Vds, Vth, Cox, lambda, Gate_Length, m.Gate_Width);
+
+      return { ...m, Cox, Vth, Id3, lambda, gm, ro, Gate_Length };
     });
   }
 
