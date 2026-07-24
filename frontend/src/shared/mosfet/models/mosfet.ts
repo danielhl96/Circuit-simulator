@@ -23,6 +23,7 @@ export class Mosfet {
     Vgs: 0,
     Vth: 1,
     Id: 0,
+    Id3: 0,
     ID: 0,
     Input_Node: '',
     Output_Node: '',

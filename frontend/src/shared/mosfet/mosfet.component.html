@@ -160,17 +160,17 @@
   <!-- DaisyUI Modal -->
   <dialog id="mosfetEditModal" class="modal" [class.modal-open]="showEditModal">
     <div class="modal-box w-80">
-      <div class="divider divider-primary mt-0">MOSFET bearbeiten</div>
+      <div class="divider divider-primary mt-0">MOSFET dimensionen</div>
 
       @for (entry of mosfetValues | keyvalue; track entry.key) {
         <div class="flex flex-row items-center justify-between w-full gap-2 mb-2">
           <label class="text-xs text-gray-600 w-32 shrink-0">{{ entry.key }}</label>
-          <input
-            (change)="changeMosfetProperty(entry.key, $event)"
-            [placeholder]="entry.value.join(' ')"
-            type="text"
-            class="input input-xs input-bordered w-full"
-          />
+<app-input
+  [setPlaceholder]="entry.value.join(' ')"
+  [setBorder]="'input input-xs input-bordered w-full'"
+  (onInputEvent)="changeMosfetProperty(entry.key, $event)"
+></app-input>
+
         </div>
       }
 

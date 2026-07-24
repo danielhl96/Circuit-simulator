@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Mosfet } from './models/mosfet';
 import { CharacteristicCurvesComponent } from '../characteristic-curves/characteristic-curves.component';
 import { ButtonComponent } from '../button/button.component';
+import { InputComponent } from '../input/input.component';
 
 @Component({
   selector: 'app-mosfet-2d',
   standalone: true,
-  imports: [CommonModule, CharacteristicCurvesComponent,ButtonComponent],
+  imports: [CommonModule, CharacteristicCurvesComponent,ButtonComponent, InputComponent],
   templateUrl: './mosfet.component.html',
 })
 export class MosfetComponent {
