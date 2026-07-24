@@ -34,6 +34,7 @@ propertyChange = new EventEmitter<{
   readonly subY     = 240;  // Substrat y-Start
   readonly subH     = 140;
   private _showEditModal: WritableSignal<boolean> = signal(false);
+  hasInputError = signal<boolean>(false);
 
   get gateX():   number { return (this.svgW - this.gateLength) / 2; }
   get gateEndX(): number { return this.gateX + this.gateLength; }

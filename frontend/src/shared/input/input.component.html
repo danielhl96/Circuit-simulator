@@ -7,3 +7,7 @@ type ="text"
   class="input input-neutral" 
 /> 
 
+
+@if (setError) {
+  <p class="text-xs text-error mt-1">{{ setError }}</p>
+}

@@ -11,10 +11,11 @@ import { NgClass } from '@angular/common';
 export class ButtonComponent {
   @Input() setLoading: boolean = false;
   @Input() setBorder: string = "";
+  @Input() disabled: boolean = false;
   @Output() onClickEvent = new EventEmitter<Event>();
 
   onClick(event: Event): void {
-    if (!this.setLoading) {
+    if (!this.disabled) {
       this.onClickEvent.emit(event);
     }
   }
