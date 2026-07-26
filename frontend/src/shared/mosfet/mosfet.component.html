@@ -159,8 +159,7 @@
 </div>
 
   <!-- DaisyUI Modal -->
-  <dialog id="mosfetEditModal" class="modal" [class.modal-open]="showEditModal">
-    <div class="modal-box w-80">
+ <app-modal [showEditModal]="showEditModal">
       <div class="divider divider-primary mt-0">MOSFET dimensionen</div>
 
       @for (entry of mosfetValues | keyvalue; track entry.key) {
@@ -175,17 +174,19 @@
 
         </div>
       }
-
-      <div class="modal-action items-center justify-center">
+      <div class="flex flex-row justify-center gap-2 mt-4">
         <app-button
           [disabled]="hasInputError()"
           [setBorder]="'btn-success btn-sm'"
           (onClickEvent)="showEditModal = false"
           [setLoading]="false">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Floppy disk save icon -->
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+            <polyline points="7 3 7 8 15 8"/>
           </svg>
-          Save
+          
         </app-button>
         <app-button
           [setLoading]="false"
@@ -194,13 +195,10 @@
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
-          Cancel
+          
         </app-button>
       </div>
-    </div>
-    <!-- Backdrop schließt Modal -->
-    <div class="modal-backdrop" (click)="showEditModal = false"></div>
-  </dialog>
+  </app-modal>
    
   
 <div class="flex flex-row">

@@ -1,81 +1,207 @@
 # ⚡ Circuit Simulator
 
-Interaktiver Schaltkreis-Simulator – gebaut mit **Angular 18**, **Tailwind CSS** und **DaisyUI**, vollständig containerisiert mit **Docker**.
+An interactive circuit simulator for semiconductor devices — built with **Angular 18**, **Tailwind CSS**, and **DaisyUI**, fully containerized with **Docker**.
 
 ---
 
-## 🗂 Projektstruktur
+## ✨ Features
+
+- Interactive 2D cross-section visualization of N-channel and P-channel MOSFETs
+- Real-time physics simulation: threshold voltage, drain current, transconductance, output resistance
+- Body effect and channel-length modulation included
+- Characteristic curves: transfer curve Id(Vgs) and output curve Id(Vds)
+- Editable device parameters via modal dialog with input validation
+- Component library panel with device cards (SVG symbols)
+- Dark/light theme toggle via DaisyUI
+
+---
+
+## 🗂 Project Structure
 
 ```
 Circuit-simulator/
-├── frontend/               # Angular 18 Applikation
+├── frontend/
 │   ├── src/
-│   │   ├── app/            # Komponenten, Routen, Konfiguration
-│   │   ├── styles.css      # Tailwind CSS Einstiegspunkt
-│   │   └── index.html
-│   ├── tailwind.config.js  # Tailwind + DaisyUI Konfiguration
-│   ├── postcss.config.js
-│   ├── angular.json
-│   ├── Dockerfile          # Multi-stage: dev → build → prod (nginx)
-│   └── nginx.conf          # SPA-Routing + Caching + Security-Header
-├── docker-compose.yml      # Orchestrierung (dev + prod)
-├── Makefile                # Shortcut-Befehle
-└── .env.example            # Umgebungsvariablen (Ports)
+│   │   ├── app/                        # Root component, routing
+│   │   └── shared/
+│   │       ├── mosfet/                 # MOSFET component + physics model
+│   │       │   └── models/mosfet.ts   # Core physics engine
+│   │       ├── characteristic-curves/ # ApexCharts wrapper
+│   │       ├── devicecard/            # Library card component
+│   │       ├── navbar/                # Top navigation
+│   │       ├── button/                # Reusable button component
+│   │       └── input/                 # Reusable input with validation
+│   ├── public/                        # Static SVG device symbols
+│   ├── Dockerfile                     # Multi-stage: dev → build → prod (nginx)
+│   └── nginx.conf                     # SPA routing + caching + security headers
+├── docker-compose.yml                 # Orchestration (dev + prod profiles)
+├── Makefile                           # Shortcut commands
+└── .env.example                       # Environment variables (ports)
 ```
 
 ---
 
-## 🚀 Schnellstart
+## 🚀 Quick Start
 
-### Voraussetzungen
+### Prerequisites
 - [Docker](https://www.docker.com/) & Docker Compose v2
 
-### Entwicklung (Hot-Reload)
+### Development (hot-reload)
 
 ```bash
-# .env anlegen
 cp .env.example .env
-
-# Container starten
 make dev
-# oder: docker compose up --build
+# or: docker compose up --build
 ```
 
-Öffne → **http://localhost:4200**
+Open → **http://localhost:4200**
 
-### Produktion (nginx)
+### Production (nginx)
 
 ```bash
 make prod
-# oder: docker compose --profile production up --build
+# or: docker compose --profile production up --build
 ```
 
-Öffne → **http://localhost:8080**
+Open → **http://localhost:8080**
 
 ---
 
-## 📋 Makefile-Befehle
+## 📋 Makefile Commands
 
-| Befehl        | Beschreibung                                      |
-|---------------|---------------------------------------------------|
-| `make dev`    | Dev-Server starten (hot-reload, Port 4200)        |
-| `make prod`   | Produktion starten (nginx, Port 8080)             |
-| `make build`  | Dev-Image bauen                                   |
-| `make build-prod` | Produktions-Image bauen                       |
-| `make down`   | Alle Container stoppen                            |
-| `make logs`   | Container-Logs anzeigen                           |
-| `make clean`  | Container, Volumes und Images entfernen           |
+| Command           | Description                                  |
+|-------------------|----------------------------------------------|
+| `make dev`        | Start dev server (hot-reload, port 4200)     |
+| `make prod`       | Start production server (nginx, port 8080)   |
+| `make build`      | Build dev image                              |
+| `make build-prod` | Build production image                       |
+| `make down`       | Stop all containers                          |
+| `make logs`       | Show container logs                          |
+| `make clean`      | Remove containers, volumes and images        |
 
 ---
 
 ## 🛠 Tech Stack
 
-| Layer      | Technologie                        |
-|------------|------------------------------------|
-| Framework  | Angular 18 (Standalone Components) |
-| Styling    | Tailwind CSS 3 + DaisyUI 4         |
-| Build      | esbuild / Angular CLI              |
-| Dev Server | ng serve (Docker, Port 4200)       |
-| Prod Server| nginx stable-alpine (Port 8080)    |
-| Container  | Docker multi-stage Builds          |
-A circuit simulator tool for different electronic devices.
+| Layer            | Technology                                    |
+|------------------|-----------------------------------------------|
+| Framework        | Angular 18 — Standalone Components, Signals   |
+| Styling          | Tailwind CSS 3 + DaisyUI 4                    |
+| Charts           | ng-apexcharts                                 |
+| Build            | esbuild / Angular CLI                         |
+| Dev Server       | `ng serve` in Docker (port 4200)              |
+| Prod Server      | nginx stable-alpine (port 8080)               |
+| Containerization | Docker multi-stage builds                     |
+
+---
+
+## 🏗 Architecture
+
+The application follows Angular's **standalone component** architecture with reactive state managed via **Signals**.
+
+```
+AppComponent
+├── NavbarComponent                       – theme toggle, library toggle event
+├── DeviceCardComponent[]                 – library panel, emits add()
+└── MosfetComponent                       – main device view
+    ├── Mosfet (class)                    – physics model, signal-based state
+    ├── CharacteristicCurvesComponent x2  – ApexCharts wrappers
+    ├── ButtonComponent                   – reusable button with loading/disabled state
+    └── InputComponent                    – reusable input with error emission
+```
+
+### State Management
+
+Each `Mosfet` instance holds its complete state in an Angular `signal({...})`.
+All derived quantities (Cox, Vth, Id, gm, ro, lambda) are computed synchronously
+inside `state.update()` in a physically correct dependency order:
+
+```
+Cox → Vth → Id₀ → λ → Id (final) → gm → ro → L_eff
+```
+
+Parameter changes from the UI flow via `@Output() propertyChange` to the parent,
+which calls `mosfet.state.update()` followed by `mosfet.update()`.
+
+---
+
+## ⚛ Physical Model
+
+The simulator implements a **long-channel MOSFET model** (Level 1 / Shichman-Hodges)
+extended with body effect and channel-length modulation.
+
+### Oxide Capacitance
+
+```
+Cox = eps_ox / t_ox
+```
+
+### Threshold Voltage (with body effect)
+
+```
+Vth = Vfb + 2*phi_F + sqrt(2 * q * eps_s * Na * (2*phi_F + Vsb)) / Cox
+```
+
+Fermi potential:
+```
+phi_F = Vt * ln(Na / ni)
+```
+
+### Drain Current
+
+**Cut-off** (Vgs <= Vth):  `Id = 0`
+
+**Linear / Triode** (Vds < Vgs - Vth):
+```
+Id = kn * [(Vgs - Vth) * Vds - Vds² / 2]
+```
+
+**Saturation** (Vds >= Vgs - Vth):
+```
+Id = (kn / 2) * (Vgs - Vth)² * (1 + lambda * Vds)
+```
+
+Process transconductance parameter:
+```
+kn = mu_n * Cox * (W / L)
+```
+
+### Transconductance
+
+```
+gm = mu_n * Cox * (W / L) * (Vgs - Vth)
+```
+
+### Output Resistance
+
+```
+ro = 1 / (lambda * Id)
+```
+
+### Channel-Length Modulation
+
+```
+lambda = 1 / (L * sqrt(Id0))
+L_eff  = L / (1 + lambda * (Vds - Vds_sat))
+```
+
+### P-Channel
+
+All equations apply symmetrically with sign inversion: Vth < 0, Vgs < 0, Vds < 0.
+The substrate doping term uses Nd instead of Na.
+
+### Constants used
+
+| Symbol | Value         | Description                            |
+|--------|---------------|----------------------------------------|
+| mu_n   | 0.05 m²/Vs    | Electron mobility                      |
+| eps_0  | 8.854e-14 F/cm| Electric constant                      |
+| eps_r  | 11.7          | Relative permittivity of silicon       |
+| ni     | 1.5e10 cm⁻³   | Intrinsic carrier concentration (300K) |
+| q      | 1.602e-19 C   | Elementary charge                      |
+
+---
+
+## 📄 License
+
+MIT
