@@ -21,7 +21,6 @@ export class CharacteristicCurvesComponent {
   private _rawCurrentA: number[] = [];
 
   private toDisplayUnit(values: number[]): number[] {
-    if (this.yUnit === 'µA') return values.map(v => parseFloat((v * 1e6).toFixed(4)));
     if (this.yUnit === 'mA') return values.map(v => parseFloat((v * 1e3).toFixed(4)));
     return values; // A
   }
