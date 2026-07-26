@@ -13,12 +13,12 @@ export class CharacteristicCurvesComponent {
 
   // Einheiten-Inputs
   @Input() xUnit: string = 'V';
-  @Input() yUnit: string = 'µA';
+  @Input() yUnit: string = 'mA';
 
   // Spannungswerte für x-Achse (in V)
-  private _xCategories: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-  // Stromwerte für y-Achse (in A, werden intern zu Mikroampere umgerechnet)
-  private _rawCurrentA: number[] = [0.000001, 0.000002, 0.000003, 0.000004, 0.000005, 0.000006, 0.000007, 0.000008, 0.000009, 0.00001];
+  private _xCategories: number[] = [];
+  // Stromwerte für y-Achse (in A, werden intern zu mA umgerechnet)
+  private _rawCurrentA: number[] = [];
 
   private toDisplayUnit(values: number[]): number[] {
     if (this.yUnit === 'µA') return values.map(v => parseFloat((v * 1e6).toFixed(4)));
