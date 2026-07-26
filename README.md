@@ -1,6 +1,6 @@
 # ⚡ Circuit Simulator
 
-An interactive circuit simulator for semiconductor devices — built with **Angular 18**, **Tailwind CSS**, and **DaisyUI**, fully containerized with **Docker**.
+An interactive MOSFET simulator — built with **Angular 18**, **Tailwind CSS**, and **DaisyUI**, fully containerized with **Docker**.
 
 ---
 
@@ -12,7 +12,6 @@ An interactive circuit simulator for semiconductor devices — built with **Angu
 - Characteristic curves: transfer curve Id(Vgs) and output curve Id(Vds)
 - Editable device parameters via modal dialog with input validation
 - Component library panel with device cards (SVG symbols)
-- Dark/light theme toggle via DaisyUI
 
 ---
 
