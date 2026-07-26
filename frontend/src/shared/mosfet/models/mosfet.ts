@@ -21,7 +21,7 @@ export class Mosfet {
     public state = signal({
     Vds: 0,
     Vgs: 0,
-    Vth: 1,
+    Vth: 0.7,
     Id: 0,
     Id3: 0,
     ID: 0,
@@ -31,9 +31,10 @@ export class Mosfet {
     Drain_Node: '',
     Gate_Node: '',
     Type: 'N',
-    Gate_Length: 5e-9,
-    Gate_Width: 7e-9,
-    Oxide_Thickness: 1e-9,
+    Gate_Length: 250e-9,   // 250 nm – nominale Gatelänge (unveränderlich)
+    Gate_Length_eff: 250e-9, // effektive Kanallänge nach Kanalmodulation
+    Gate_Width:  500e-9,   // 500 nm
+    Oxide_Thickness: 3.5e-9, // 3.5 nm – SiO2 still physical
     Vsb: 0,
     Vfb: 0,
     Cox: 1e-9,
@@ -70,7 +71,7 @@ export class Mosfet {
       const lambda = this.calculateChannelLengthModulationWith(Id0, m.Vgs, Vth, m.Vds, m.Gate_Length);
 
       // 5. Id (2. Iteration): jetzt mit korrektem lambda → physikalisch konsistent
-      const Id = this.calculateDrainCurrentWith(true, m.Vgs, m.Vds, Vth, Cox, lambda, m.Gate_Length, m.Gate_Width);
+      var Id = this.calculateDrainCurrentWith(true, m.Vgs, m.Vds, Vth, Cox, lambda, m.Gate_Length, m.Gate_Width);
 
       // 6. gm: hängt von Vgs, Vth, Cox, W/L ab
       const gm = this.calculateTransconductanceWith(m.Vgs, Vth, Cox, m.Gate_Width, m.Gate_Length);
@@ -78,12 +79,12 @@ export class Mosfet {
       // 7. ro: hängt von lambda und finalem Id ab
       const ro = this.calculateOutputResistanceWith(m.Vgs, Vth, m.Vds, lambda, Id);
 
-      // 8. Gate_Length effektiv: hängt von lambda ab
-      const Gate_Length = this.calculateChannelLengthAfterModulationWith(m.Gate_Length, lambda, m.Vgs, Vth, m.Vds);
+      // 8. Gate_Length_eff: hängt von lambda ab – nominale Gate_Length bleibt unverändert!
+      const Gate_Length_eff = this.calculateChannelLengthAfterModulationWith(m.Gate_Length, lambda, m.Vgs, Vth, m.Vds);
 
-      const Id3 = this.calculateDrainCurrentWith(true, m.Vgs, m.Vds, Vth, Cox, lambda, Gate_Length, m.Gate_Width);
+       Id = this.calculateDrainCurrentWith(true, m.Vgs, m.Vds, Vth, Cox, lambda, Gate_Length_eff, m.Gate_Width);
 
-      return { ...m, Cox, Vth, Id3, lambda, gm, ro, Gate_Length };
+      return { ...m, Cox, Vth, Id, lambda, gm, ro, Gate_Length_eff };
     });
   }
 
@@ -117,7 +118,7 @@ export class Mosfet {
       Id_Vds: []
     };
       for (const Vds of VdsValues) {
-        const Id = this.calculateDrainCurrent(true, 5, Vds);
+        const Id = this.calculateDrainCurrent(true, 2, Vds);
         results.Vds.push(Vds);
         results.Id_Vds.push(Id);
       }
@@ -139,9 +140,10 @@ export class Mosfet {
       Drain_Node: '',
       Gate_Node: '',    
     Type: 'N',
-    Gate_Length:5e-9,
-    Gate_Width: 7e-9,
-    Oxide_Thickness: 1e-9,
+    Gate_Length: 250e-9,
+    Gate_Length_eff: 250e-9,
+    Gate_Width: 500e-9,
+    Oxide_Thickness: 3.5e-9,
     Vsb: 0,
     Vfb: 0,
     Cox: 1e-9,
@@ -170,7 +172,8 @@ export class Mosfet {
             gm: [m.gm, "S"],
             ro: [m.ro, "Ω"],
             lambda: [m.lambda, "1/V"],
-            Gate_Length: [m.Gate_Length*1e9, "nm"],  // Convert to nanometers for display
+            Gate_Length: [m.Gate_Length*1e9, "nm"],
+            Gate_Length_eff: [m.Gate_Length_eff*1e9, "nm"],
             Gate_Width: [m.Gate_Width*1e9, "nm"],  // Convert to nanometers for display
             Oxide_Thickness: [m.Oxide_Thickness*1e9, "nm"],  // Convert to nanometers for display
             Cox: [m.Cox, "F/m^2"],
@@ -313,7 +316,10 @@ export class Mosfet {
         const sign = type === 'N' ? 1 : -1;
         const Vth_signed = sign * Vth;
         if (Vgs > Vth_signed && Vds >= (Vgs - Vth_signed)) {
-            return 1 / (Gate_Length * Math.sqrt(Id0));
+            // Empirische Näherung: λ ≈ 0.1 / L[µm]
+            // Für L=250nm → λ≈0.4 V⁻¹, für L=1µm → λ≈0.1 V⁻¹
+            const L_um = Gate_Length * 1e6; // m → µm
+            return 0.1 / L_um;
         }
         return 0;
     }
