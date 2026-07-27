@@ -6,26 +6,45 @@
   <!-- mach einen weißen hintergrund als block-->
    
     
-<div class="flex flex-col items-start justify-start h-[calc(100dvh-2rem)] bg-white rounded-lg shadow-lg m-4"> 
+<div class="flex flex-col items-start  justify-start h-[calc(100dvh-2rem)] bg-white rounded-lg shadow-lg m-4"> 
     <!-- ── Bauteil-Bibliothek ────────────────────────────────── -->
      <div class= "flex flex-row items-center justify-start w-full">
-    
     @if (libOpen()) {
-    <div class="p-4 py-2 m-2 w-40 border border-gray-300 rounded-lg bg-base-100">
-      <p class="text-sm text-black">Library</p>
-    <div class="grid grid-cols-1 justify-start items-start sm:grid-cols-1 lg:grid-cols-1 max-h-96 overflow-y-auto gap-4 mb-2">
-      @for (component of components(); track component.symbol; let i = $index) {
-        <app-device-card
-          [component]="component"
-          (add)="addComponent(i)">
-        </app-device-card>
-      }
-    </div>
+    <div class="relative p-4 py-2 w-55 border border-gray-300 rounded-lg bg-base-100">
+      <div class="absolute top-1/2 -translate-y-1/2 -right-6 z-10">
+        <button
+          (click)="toggleLib()"
+          class="flex items-center justify-center w-6 h-12 bg-base-100 border border-l-0 border-gray-300 rounded-r-full shadow-sm hover:bg-gray-100 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <p class="text-sm text-center font-bold text-black mb-2">Library</p>
+      <div class="grid grid-cols-1 justify-start items-start sm:grid-cols-1 lg:grid-cols-1 max-h-96 overflow-y-auto gap-4 mb-2">
+        @for (component of components(); track component.symbol; let i = $index) {
+          <app-device-card
+            [component]="component"
+            (add)="addComponent(i)">
+          </app-device-card>
+        }
+      </div>
      </div>
+    }
+
+    @else {
+      <button
+        (click)="toggleLib()"
+        class="flex items-center justify-center w-6 h-16 m-0 bg-base-100 border border-gray-300 rounded-r-full shadow-sm hover:bg-gray-100 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
     }
      <!-- ── Schaltplan ───────────────────────────────────────── -->
       <div class="flex flex-row">
-    <div class="flex-1 p-4 m-2 border border-gray-300 w-[80dvw] overflow-y-auto rounded-lg h-[85dvh] bg-base-100">
+    <div class="flex-1 p-4 m-10 border border-gray-300 w-[80dvw] overflow-y-auto rounded-lg h-[85dvh] bg-base-100">
       
       @if (addedComponents().length === 0) {
         <p class="text-sm text-gray-400 italic">Kein Bauteil ausgewählt – klicke in der Library auf ein Bauteil.</p>
